@@ -11,6 +11,7 @@
     <AssemblyName>AsyncInputOptimize</AssemblyName>
     <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <LangVersion>9.0</LangVersion>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -21,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,6 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
@@ -76,6 +79,9 @@
   <ItemGroup>
     <Compile Include="AudioDSPManager.cs" />
     <Compile Include="EntryPoint.cs" />
+    <Compile Include="Platform\BaseSelect.cs" />
+    <Compile Include="Platform\Linux.cs" />
+    <Compile Include="Platform\Windows.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Patch\__scrConductor.cs" />
   </ItemGroup>
