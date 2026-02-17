@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AsyncInputOptimize.Platform;
+using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -9,10 +10,10 @@ namespace AsyncInputOptimize.Patch
     [HarmonyPatch(typeof(scrConductor), "Update")]
     public static class __scrConductor
     {
-        private static long Update_1()
+        private static unsafe long Update_1()
         {
-            AudioDSPManager.GetSystemTimePreciseAsFileTime(out long a);
-            return DateTime.Now.Ticks - DateTime.UtcNow.Ticks + a + 504911232000000000L;
+            long l = BaseSelect.GetFileTime();
+            return DateTime.Now.Ticks - DateTime.UtcNow.Ticks + l;
         }
         private static double Update_2() => AudioDSPManager.GetDSPTime();
         [HarmonyTranspiler]

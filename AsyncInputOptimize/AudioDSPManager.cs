@@ -1,29 +1,18 @@
-﻿using System;
+﻿using AsyncInputOptimize.Platform;
+using System;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace AsyncInputOptimize
 {
-    public static class AudioDSPManager
+    public static unsafe class AudioDSPManager
     {
-        static AudioDSPManager()
-        {
-            QueryPerformanceFrequency(out FREQ);
-            FREQ = 10000000 / FREQ;
-        }
-        [DllImport("Kernel32.dll")]
-        public static extern void GetSystemTimePreciseAsFileTime(out long val);
-        [DllImport("Kernel32.dll")]
-        public static extern int QueryPerformanceFrequency(out long val);
-        [DllImport("Kernel32.dll")]
-        public static extern int QueryPerformanceCounter(out long val);
         private const double HIGH_PRECISE = 1.0 / 750.0;
         private const double MID_PRECISE = 1.0 / 150.0;
         private const double LOW_PRECISE = 1.0 / 30.0;
         private const double SEC_2_TICK = 10000000.0;
         private const int MAX_ERROR_COUNT = 8;
         private const int SINGLE_ROUND = 750;
-        private static readonly long FREQ;
 
         private static double lastTime;
         private static double dspTime;
@@ -36,8 +25,7 @@ namespace AsyncInputOptimize
         {
             double res;
 
-            QueryPerformanceCounter(out long l);
-            l *= FREQ;
+            long l = BaseSelect.GetFileTime();
             res = Time.captureFramerate > 0
                 ? 1.0 / Time.captureFramerate
                 : (l - lastTime) / SEC_2_TICK * (((long)(Time.timeScale * 1E6 + 0.1)) * 1E-6);
@@ -88,14 +76,12 @@ namespace AsyncInputOptimize
         }
         public static double GetDSPTime()
         {
-            QueryPerformanceCounter(out long l);
-            l *= FREQ;
+            long l = BaseSelect.GetFileTime();
             return dspTime + (l - lastTime) / SEC_2_TICK;
         }
         public static long GetDSPTimeAsFileTime()
         {
-            QueryPerformanceCounter(out long l);
-            l *= FREQ;
+            long l = BaseSelect.GetFileTime();
             double curr_dsp = dspTime + (l - lastTime) / SEC_2_TICK;
             return (long)(curr_dsp * SEC_2_TICK);
         }
