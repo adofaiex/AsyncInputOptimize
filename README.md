@@ -1,5 +1,7 @@
 # Async Input Optimize
 
+> 本项目是从 **Cover** 独立出来的功能
+
 这是一个为 **ADOFAI 异步输入** 优化的 Mod
 
 通过 **HarmonyLib** 的 HarmonyPatch 修改 **Assembly-CSharp.dll** 相关代码实现。
