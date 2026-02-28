@@ -15,7 +15,7 @@ namespace AsyncInputOptimize.Patch
             long l = BaseSelect.GetFileTime();
             return DateTime.Now.Ticks - DateTime.UtcNow.Ticks + l;
         }
-        private static double Update_2() => AudioDSPManager.GetDSPTime();
+        private static double Update_2() => DSPTimeSimulater.GetDSPTime();
         [HarmonyTranspiler]
         public static IEnumerable<CodeInstruction> Transpiler_Update(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {

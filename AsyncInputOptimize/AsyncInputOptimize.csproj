@@ -77,7 +77,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AudioDSPManager.cs" />
+    <Compile Include="DSPTimeSimulater.cs" />
     <Compile Include="EntryPoint.cs" />
     <Compile Include="Platform\BaseSelect.cs" />
     <Compile Include="Platform\Linux.cs" />
