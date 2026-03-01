@@ -19,8 +19,8 @@ namespace AsyncInputOptimize
             public DSPLimit(double e, double m, double n)
             {
                 E = e;
-                M = e;
-                N = e;
+                M = m;
+                N = n;
             }
             /// <summary>
             /// Error Limit
