@@ -1,6 +1,7 @@
 # Async Input Optimize
 
 > 本项目是从 **Cover** 独立出来的功能
+> 
 > 此项目的旧版本已经移动到[这里](https://github.com/adofaiex/AsyncInputOptimize_OLD)
 
 这是一个为 **ADOFAI 异步输入** 优化的 Mod
