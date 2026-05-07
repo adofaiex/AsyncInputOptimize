@@ -71,7 +71,6 @@ namespace AsyncInputOptimize
                 if (_unsafeMode)
                 {
                     r = 0;
-                    Thread.Yield();
                     lt = CppBrige.GetSystemTick();
                 }
                 else

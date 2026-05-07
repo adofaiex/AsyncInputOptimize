@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using System;
 using UnityEngine;
 using static UnityModManagerNet.UnityModManager;
 
@@ -11,6 +12,7 @@ namespace AsyncInputOptimize
         public static GUIStyleState gss;
         public static Harmony harmony;
         public static bool cover_is_installer;
+        public static bool mtlib_is_installer;
         public static bool FindMod(string name)
         {
             foreach (ModEntry modEntry in modEntries)
@@ -63,11 +65,13 @@ namespace AsyncInputOptimize
             me.OnUpdate = Update;
             me.OnGUI = GUI;
             cover_is_installer = FindMod("Cover", "Cover.dll");
+            mtlib_is_installer = FindMod("ModsTagLib.Unity", "ModsTagLib.__Bootstrap.dll");
             CppBrige.Init(me);
         }
         public static bool Toggle(ModEntry me, bool a)
         {
             cover_is_installer = FindMod("Cover", "Cover.dll");
+            mtlib_is_installer = FindMod("ModsTagLib.Unity", "ModsTagLib.__Bootstrap.dll");
             if (cover_is_installer) return true;
             if (a)
             {
@@ -82,7 +86,7 @@ namespace AsyncInputOptimize
         }
         public static void Update(ModEntry me, float _)
         {
-            WorkerThread.Start();
+            // WorkerThread.Start();
         }
         public static void GUI(ModEntry me)
         {
@@ -195,7 +199,7 @@ namespace AsyncInputOptimize
                 GUILayout.EndVertical();
                 GUILayout.BeginVertical();
                 GUILayout.Label("喵? 你已经安装了<color=#3fffff>Cover</color>了喵, 直接用<color=#3fffff>Cover</color>的就行了喵");
-                GUILayout.Label("Mod补丁我就给你禁用了喵~");
+                GUILayout.Label("Mod补丁和工作线程我就给你禁用了喵~");
                 GUILayout.EndVertical();
                 GUILayout.FlexibleSpace();
                 GUILayout.EndHorizontal();

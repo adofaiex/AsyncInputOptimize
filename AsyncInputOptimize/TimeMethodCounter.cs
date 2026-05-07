@@ -133,17 +133,17 @@ namespace AsyncInputOptimize
         public TimeMethodCounter(delegate* managed<void> param)
         {
             m_update = param;
-            m_timeArray = new(32);
+            m_timeArray = new(4096);
             // avg_update = 2500000;
             Reload();
         }
-        public TimeMethodCounter(delegate* managed<void> param, int len)
-        {
-            m_update = param;
-            m_timeArray = new(len);
-            // avg_update = 2500000;
-            Reload();
-        }
+        // public TimeMethodCounter(delegate* managed<void> param, int len)
+        // {
+        //     m_update = param;
+        //     m_timeArray = new(len);
+        //     // avg_update = 2500000;
+        //     Reload();
+        // }
         private long m_lastTimeS;
         // private long m_lastTimeE;
         private RepeatQueue m_timeArray;

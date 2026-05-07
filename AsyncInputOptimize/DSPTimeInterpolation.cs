@@ -7,6 +7,7 @@
  * Flag: public auto ansi abstract sealed beforefieldinit flag(200000)
  * Extends: [mscorlib]System.Object
  */
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
@@ -17,58 +18,21 @@ namespace AsyncInputOptimize
 {
     public static unsafe class DSPTimeInterpolation
     {
-        [StructLayout(LayoutKind.Explicit, Pack = 8, Size = 8)]
-        private struct VolatileDouble
+        [StructLayout(LayoutKind.Explicit, Pack = 64, Size = 64)]
+        private struct VolatileTime64
         {
-            public VolatileDouble(double value)
+            public VolatileTime64(long timeunit)
             {
                 this.value = (void*)0;
-                interlocked = value;
-            }
-            [FieldOffset(0)]
-            private double interlocked;
-            [FieldOffset(0)]
-            private volatile void* value;
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void Set(double value)
-            {
-                this.value = *(void**)&value;
-            }
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public readonly double Get()
-            {
-                void* val = value;
-                return *(double*)&val;
-            }
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void Add(double value)
-            {
-                void* val = this.value;
-                double val2 = *(double*)&val + value;
-                this.value = *(void**)&val2;
-            }
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void AddInterlocked(double value)
-            {
-                Interlocked.Exchange(ref interlocked, interlocked + value);
-            }
-        }
-        [StructLayout(LayoutKind.Explicit, Pack = 8, Size = 8)]
-        private struct VolatileLong
-        {
-            public VolatileLong(long value)
-            {
-                this.value = (void*)0;
-                interlocked = value;
+                interlocked = 0;
+                unit = timeunit;
             }
             [FieldOffset(0)]
             private long interlocked;
             [FieldOffset(0)]
             private volatile void* value;
+            [FieldOffset(8)]
+            private readonly long unit;
             [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Set(long value)
@@ -77,9 +41,33 @@ namespace AsyncInputOptimize
             }
             [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void SetTimeF(float value)
+            {
+                this.value = (void*)(long)(value * unit);
+            }
+            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void SetTimeD(double value)
+            {
+                this.value = (void*)(long)(value * unit);
+            }
+            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public readonly long Get()
             {
                 return (long)value;
+            }
+            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public readonly float GetTimeF()
+            {
+                return (float)(long)value / unit;
+            }
+            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public readonly double GetTimeD()
+            {
+                return (double)(long)value / unit;
             }
             [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -95,12 +83,12 @@ namespace AsyncInputOptimize
             }
         }
 
-        private static VolatileDouble m_dspTime;
-        private static VolatileDouble m_lastDSPTime;
-        private static VolatileDouble m_delta;
-        private static long m_realTime;
-        private static double m_maxOffset;
-        private static double m_minOffset;
+        private static VolatileTime64 m_dspTime = new(1000000000);
+        private static VolatileTime64 m_dspLastTime = new(1000000000);
+        private static VolatileTime64 m_dspDelta = new(1000000000);
+        private static double m_dspMaxOffset;
+        private static double m_dspMinOffset;
+
         // private static readonly ModsTagLib.Unity.VirtualModLog m_log = new("Cover.DSPTimeSimulater");
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -121,53 +109,64 @@ namespace AsyncInputOptimize
             : TryOutF32Offset(Time.timeScale);
         internal static void TUpdate()
         {
-            double curr_dsptime = AudioSettings.dspTime;
-            m_dspTime.Set(curr_dsptime);
-            double last_dsptime = m_lastDSPTime.Get();
-            if (curr_dsptime != last_dsptime)
+            double tick = WorkerThread.MainUpdate.Result.deltaTime * Multiply();
+
+            double dsp = AudioSettings.dspTime;
+            if (m_dspTime.GetTimeD() >= dsp)
             {
-                m_realTime = CppBrige.GetSystemTick();
-                double delta = m_realTime - (curr_dsptime * 10_000_000.0);
-                if (delta > m_maxOffset)
-                {
-                    m_minOffset += delta - m_maxOffset;
-                    m_maxOffset = delta;
-                }
-                m_minOffset = delta > m_minOffset ? m_minOffset : delta;
-                m_delta.Set(delta - ((m_maxOffset + m_minOffset) / 2));
-                m_lastDSPTime.Set(curr_dsptime);
-                return;
+                m_dspTime.SetTimeD(dsp);
             }
-            m_delta.Add(WorkerThread.MainUpdate.Result.deltaTime * Multiply());
+            double dsp_curr = m_dspTime.GetTimeD();
+            double dsp_last = m_dspLastTime.GetTimeD();
+            if (dsp_curr != dsp_last)
+            {
+                double delta = CppBrige.GetSystemTick() - dsp_curr * 10_000_000.0;
+                if (delta > m_dspMaxOffset)
+                {
+                    m_dspMinOffset += delta - m_dspMaxOffset;
+                    m_dspMaxOffset = delta;
+                }
+                m_dspMinOffset = delta > m_dspMinOffset ? m_dspMinOffset : delta;
+                m_dspDelta.SetTimeD(delta - ((m_dspMaxOffset + m_dspMinOffset) / 2));
+                AudioConfiguration ac = AudioSettings.GetConfiguration();
+                if (dsp_curr - dsp_last - (ac.dspBufferSize * 2 / (double)ac.sampleRate) > 0.0001) // 0.1ms
+                {
+                    EntryPoint.logger.Log("dsp XRUN " + (dsp_curr - dsp_last));
+                    m_dspDelta.SetTimeD(m_dspDelta.GetTimeD() + dsp_last - dsp_curr);
+                }
+                m_dspLastTime.SetTimeD(dsp);
+            }
+            else
+            {
+                m_dspDelta.SetTimeD(m_dspDelta.GetTimeD() + tick);
+            }
         }
 
         public static double dspTime
         {
             get
             {
-                double d = m_dspTime.Get();
-                double ld = m_lastDSPTime.Get();
-                while (d != ld)
+                double ct, lt;
+                do
                 {
-                    d = m_dspTime.Get();
-                    ld = m_lastDSPTime.Get();
-                }
-                return d + m_delta.Get() / 10_000_000.0;
+                    ct = m_dspTime.GetTimeD();
+                    lt = m_dspLastTime.GetTimeD();
+                } while (Math.Abs(ct - lt) > 0.0000001);
+                return ct + m_dspDelta.GetTimeD() / 10_000_000.0;
             }
         }
 
-        public static double dspTimeAsFileTime
+        public static long dspTimeAsFileTime
         {
             get
             {
-                double d = m_dspTime.Get();
-                double ld = m_lastDSPTime.Get();
-                while (d != ld)
+                long ct, lt;
+                do
                 {
-                    d = m_dspTime.Get();
-                    ld = m_lastDSPTime.Get();
-                }
-                return d * 10_000_000.0 + m_delta.Get();
+                    ct = m_dspTime.Get();
+                    lt = m_dspLastTime.Get();
+                } while (Math.Abs(ct - lt) > 100);
+                return (long)(ct / 100.0 + m_dspDelta.GetTimeD());
             }
         }
     }
