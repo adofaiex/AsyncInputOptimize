@@ -112,7 +112,7 @@ namespace AsyncInputOptimize
             double tick = WorkerThread.MainUpdate.Result.deltaTime * Multiply();
 
             double dsp = AudioSettings.dspTime;
-            if (m_dspTime.GetTimeD() >= dsp)
+            if (dsp >= m_dspTime.GetTimeD())
             {
                 m_dspTime.SetTimeD(dsp);
             }
