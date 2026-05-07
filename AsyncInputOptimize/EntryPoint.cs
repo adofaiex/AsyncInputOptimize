@@ -11,6 +11,7 @@ namespace AsyncInputOptimize
         public static Texture2D ui2d;
         public static GUIStyleState gss;
         public static Harmony harmony;
+        public static string path;
         public static bool cover_is_installer;
         public static bool mtlib_is_installer;
         public static bool FindMod(string name)
@@ -59,6 +60,7 @@ namespace AsyncInputOptimize
             gss = new() { background = ui2d };
             harmony = new Harmony(me.Info.Id);
             logger = me.Logger;
+            path = me.Path;
             me.OnToggle = Toggle;
             me.OnUpdate = Update;
             me.OnGUI = GUI;

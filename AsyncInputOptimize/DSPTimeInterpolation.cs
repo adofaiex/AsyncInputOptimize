@@ -8,9 +8,11 @@
  * Extends: [mscorlib]System.Object
  */
 using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using UnityEngine;
 
@@ -118,9 +120,10 @@ namespace AsyncInputOptimize
             }
             double dsp_curr = m_dspTime.GetTimeD();
             double dsp_last = m_dspLastTime.GetTimeD();
+            double delta = 0;
             if (dsp_curr != dsp_last)
             {
-                double delta = CppBrige.GetSystemTick() - dsp_curr * 10_000_000.0;
+                delta = CppBrige.GetSystemTick() - dsp_curr * 10_000_000.0;
                 if (delta > m_dspMaxOffset)
                 {
                     m_dspMinOffset += delta - m_dspMaxOffset;
@@ -139,6 +142,35 @@ namespace AsyncInputOptimize
             else
             {
                 m_dspDelta.SetTimeD(m_dspDelta.GetTimeD() + tick);
+            }
+            if (dspTime < 0)
+            {
+                AudioConfiguration ac = AudioSettings.GetConfiguration();
+                EntryPoint.logger.Log("WTF Was That??????? ");
+                EntryPoint.logger.Log("Dumping Error Stack...");
+                StringBuilder filedata = new(255);
+                filedata.Append("audio configuration\n");
+                filedata.Append("  " + nameof(ac.dspBufferSize) + ac.dspBufferSize.ToString() + "\n");
+                filedata.Append("  " + nameof(ac.numRealVoices) + ac.numRealVoices.ToString() + "\n");
+                filedata.Append("  " + nameof(ac.numVirtualVoices) + ac.numVirtualVoices.ToString() + "\n");
+                filedata.Append("  " + nameof(ac.sampleRate) + ac.sampleRate.ToString() + "\n");
+                filedata.Append("  " + nameof(ac.speakerMode) + ac.speakerMode.ToString() + "\n");
+                filedata.Append("local variables\n");
+                filedata.Append("  " + nameof(tick) + tick.ToString() + "\n");
+                filedata.Append("  " + nameof(dsp) + dsp.ToString() + "\n");
+                filedata.Append("  " + nameof(dsp_curr) + dsp_curr.ToString() + "\n");
+                filedata.Append("  " + nameof(dsp_last) + dsp_last.ToString() + "\n");
+                filedata.Append("  " + nameof(delta) + delta.ToString() + "\n");
+                filedata.Append("class fields\n");
+                filedata.Append("  " + nameof(m_dspTime) + m_dspTime.Get().ToString() + "\n");
+                filedata.Append("  " + nameof(m_dspTime) + m_dspTime.Get().ToString() + "\n");
+                filedata.Append("  " + nameof(m_dspLastTime) + m_dspLastTime.Get().ToString() + "\n");
+                filedata.Append("  " + nameof(m_dspDelta) + m_dspDelta.Get().ToString() + "\n");
+                filedata.Append("  " + nameof(m_dspMaxOffset) + m_dspMaxOffset.ToString() + "\n");
+                filedata.Append("  " + nameof(m_dspMinOffset) + m_dspMinOffset.ToString() + "\n");
+
+                File.WriteAllText(Path.Combine(EntryPoint.path,  + CppBrige.GetSystemTick() + ".dump"), filedata.ToString());
+                CppBrige.GOGOGO_GO_TO_CRASH______________();
             }
         }
 
