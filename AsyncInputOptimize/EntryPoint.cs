@@ -19,7 +19,6 @@ namespace AsyncInputOptimize
             {
                 if ((modEntry.Info.DisplayName == name || modEntry.Info.Id == name) && modEntry.Active)
                 {
-                    cover_is_installer = true;
                     return true;
                 }
             }
@@ -31,7 +30,6 @@ namespace AsyncInputOptimize
             {
                 if ((modEntry.Info.DisplayName == name || modEntry.Info.Id == name || modEntry.Info.AssemblyName == assembly_name) && modEntry.Active)
                 {
-                    cover_is_installer = true;
                     return true;
                 }
             }
