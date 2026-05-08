@@ -22,7 +22,7 @@ namespace AsyncInputOptimize.Patch
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static long Update_1() => DateTime.Now.Ticks - DateTime.UtcNow.Ticks + CppBrige.GetSystemTick() + 504911232000000000L;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static double Update_2() => DSPTimeInterpolation.dspTime;
+        private static double Update_2() => InterpolationTime.dspTime;
         [HarmonyTranspiler]
         public static IEnumerable<CodeInstruction> Transpiler_Update(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {

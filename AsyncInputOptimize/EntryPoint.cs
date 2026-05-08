@@ -76,6 +76,7 @@ namespace AsyncInputOptimize
             if (a)
             {
                 harmony.PatchAll();
+                InterpolationTime.Awake();
                 WorkerThread.Start();
             }
             else
@@ -86,7 +87,6 @@ namespace AsyncInputOptimize
         }
         public static void Update(ModEntry me, float _)
         {
-            // WorkerThread.Start();
         }
         public static void GUI(ModEntry me)
         {
@@ -115,7 +115,7 @@ namespace AsyncInputOptimize
             GUILayout.Label("");
             GUILayout.EndVertical();
 
-            double sim_dsptime = DSPTimeInterpolation.dspTime;
+            double sim_dsptime = InterpolationTime.dspTime;
             double dsptime = AudioSettings.dspTime;
             int buffer_size = AudioSettings.GetConfiguration().dspBufferSize;
             int sample_rate = AudioSettings.GetConfiguration().sampleRate;

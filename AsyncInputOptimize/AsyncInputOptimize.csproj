@@ -74,6 +74,7 @@
     <Compile Include="Patch\__scrCountdown.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Patch\__scrConductor.cs" />
+    <Compile Include="TimeConvert.cs" />
     <Compile Include="TimeMethodCounter.cs" />
     <Compile Include="WorkerThread.cs" />
   </ItemGroup>

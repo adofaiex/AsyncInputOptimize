@@ -14,7 +14,7 @@ namespace AsyncInputOptimize
 {
     internal static unsafe class WorkerThread
     {
-        public static readonly TimeMethodCounter MainUpdate = new(&DSPTimeInterpolation.TUpdate);
+        public static readonly TimeMethodCounter MainUpdate = new(&InterpolationTime.TUpdate);
 
         internal static Thread CurrentThread;
         internal static byte[] Config

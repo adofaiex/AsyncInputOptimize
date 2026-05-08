@@ -7,18 +7,19 @@
  * Flag: public auto ansi abstract sealed beforefieldinit flag(200000)
  * Extends: [mscorlib]System.Object
  */
+using ADOFAI;
 using System;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.LowLevel;
+using UnityEngine.PlayerLoop;
 
 namespace AsyncInputOptimize
 {
-    public static unsafe class DSPTimeInterpolation
+    public static unsafe class InterpolationTime
     {
         [StructLayout(LayoutKind.Explicit, Pack = 64, Size = 64)]
         private struct VolatileTime64
@@ -84,46 +85,110 @@ namespace AsyncInputOptimize
                 Interlocked.Add(ref interlocked, value);
             }
         }
+        [RequireComponent(typeof(AudioSource))]
+        private sealed class Script : MonoBehaviour
+        {
+            private static Script instane;
+            internal static void Init()
+            {
+                if (instane != null)
+                    return;
+                GameObject obj = new GameObject("CNM");
+                instane = obj.AddComponent(typeof(Script)) as Script;
+                DontDestroyOnLoad(obj);
+                DontDestroyOnLoad(instane);
+            }
+            private void Start()
+            {
+                var source = GetComponent<AudioSource>();
 
+                source.clip = AudioClip.Create("Runner", 1, 1, 48000, false); ;
+                source.loop = true;
+                source.volume = 0;
+                source.Play();
+            }
+            private void Awake()
+            {
+                PlayerLoopSystem loop = PlayerLoop.GetCurrentPlayerLoop();
+                // 找到 PreUpdate 阶段
+                for (int i = 0; i < loop.subSystemList.Length; i++)
+                {
+                    PlayerLoopSystem preUpdate = loop.subSystemList[i];
+                    if (preUpdate.type == typeof(PreUpdate))
+                    {
+                        var subSystems = new System.Collections.Generic.List<PlayerLoopSystem>(preUpdate.subSystemList);
+
+                        // 创建你的自定义系统
+                        PlayerLoopSystem myEarlySystem = new PlayerLoopSystem
+                        {
+                            type = typeof(InterpolationTime),
+                            updateDelegate = InterpolationTime.UnityUpdate
+                        };
+
+                        // 插入在 UpdateTime 之后（UpdateTime 通常是 PreUpdate 的第一个子系统）
+                        subSystems.Insert(1, myEarlySystem);
+                        preUpdate.subSystemList = subSystems.ToArray();
+                        loop.subSystemList[i] = preUpdate;
+                        break;
+                    }
+                }
+                PlayerLoop.SetPlayerLoop(loop);
+            }
+            private void OnAudioFilterRead(float[] data, int channels)
+            {
+                DSPUpdate();
+            }
+        }
+
+        private static VolatileTime64 m_dspMainUpdateTime = new(1000000000);
         private static VolatileTime64 m_dspTime = new(1000000000);
         private static VolatileTime64 m_dspLastTime = new(1000000000);
         private static VolatileTime64 m_dspDelta = new(1000000000);
         private static double m_dspMaxOffset;
         private static double m_dspMinOffset;
+        internal static void DSPUpdate()
+        {
+            m_dspMainUpdateTime.SetTimeD(AudioSettings.dspTime);
+        }
 
-        // private static readonly ModsTagLib.Unity.VirtualModLog m_log = new("Cover.DSPTimeSimulater");
-
+        private static VolatileTime64 m_unityMainUpdateTime = new(1000000000);
+        private static VolatileTime64 m_unityTime = new(1000000000);
+        private static VolatileTime64 m_unityLastTime = new(1000000000);
+        private static VolatileTime64 m_unityDelta = new(1000000000);
+        private static double m_unityError;
+        private static int m_unitySkip;
+        internal static void UnityUpdate()
+        {
+            m_unityMainUpdateTime.SetTimeD(Time.timeAsDouble);
+            m_multiply.SetTimeD(Time.captureFramerate != 0
+            ? TryOutF32Offset(Time.unscaledDeltaTime) / TryOutF32Offset(Time.captureDeltaTime)
+            : TryOutF32Offset(Time.timeScale));
+        }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double TryOutF32Offset(float val)
         {
             return ((long)(val * 1E6 + 0.1)) * 1E-6;
         }
-        private static double GetAudioFrequency()
+
+        // private static readonly ModsTagLib.Unity.VirtualModLog m_log = new("Cover.InterpTime");
+        private static VolatileTime64 m_multiply = new(1000000000000);
+
+        internal static void Awake()
         {
-            AudioConfiguration ac = AudioSettings.GetConfiguration();
-            return (double)ac.dspBufferSize / (double)ac.sampleRate;
+            Script.Init();
         }
-        // private static double Multiply() => Time.captureFramerate != 0
-        //     ? scrMisc_64.TryOutF32Offset(Time.unscaledDeltaTime) / (1 / scrMisc_64.TryOutF32Offset(Time.captureDeltaTime))
-        //     : scrMisc_64.TryOutF32Offset(Time.timeScale);
-        private static double Multiply() => Time.captureFramerate != 0
-            ? TryOutF32Offset(Time.unscaledDeltaTime) / (1 / TryOutF32Offset(Time.captureDeltaTime))
-            : TryOutF32Offset(Time.timeScale);
+
         internal static void TUpdate()
         {
-            double tick = WorkerThread.MainUpdate.Result.deltaTime * Multiply();
+            double tick = WorkerThread.MainUpdate.Result.deltaTime * m_multiply.GetTimeD();
 
-            double dsp = AudioSettings.dspTime;
-            if (dsp >= m_dspTime.GetTimeD())
-            {
-                m_dspTime.SetTimeD(dsp);
-            }
+            double dsp = m_dspMainUpdateTime.GetTimeD();
+            m_dspTime.SetTimeD(dsp);
             double dsp_curr = m_dspTime.GetTimeD();
             double dsp_last = m_dspLastTime.GetTimeD();
-            double delta = 0;
             if (dsp_curr != dsp_last)
             {
-                delta = CppBrige.GetSystemTick() - dsp_curr * 10_000_000.0;
+                double delta = CppBrige.GetSystemTick() - (dsp_curr * TimeConvert.D_Second_Tick);
                 if (delta > m_dspMaxOffset)
                 {
                     m_dspMinOffset += delta - m_dspMaxOffset;
@@ -134,7 +199,7 @@ namespace AsyncInputOptimize
                 AudioConfiguration ac = AudioSettings.GetConfiguration();
                 if (dsp_curr - dsp_last - (ac.dspBufferSize * 2 / (double)ac.sampleRate) > 0.0001) // 0.1ms
                 {
-                    EntryPoint.logger.Log("dsp XRUN " + (dsp_curr - dsp_last));
+                    // m_log.WARN("dsp XRUN " + (dsp_curr - dsp_last));
                     m_dspDelta.SetTimeD(m_dspDelta.GetTimeD() + dsp_last - dsp_curr);
                 }
                 m_dspLastTime.SetTimeD(dsp);
@@ -142,35 +207,46 @@ namespace AsyncInputOptimize
             else
             {
                 m_dspDelta.SetTimeD(m_dspDelta.GetTimeD() + tick);
-            }
-            if (dspTime < 0)
-            {
-                AudioConfiguration ac = AudioSettings.GetConfiguration();
-                EntryPoint.logger.Log("WTF Was That??????? ");
-                EntryPoint.logger.Log("Dumping Error Stack...");
-                StringBuilder filedata = new(255);
-                filedata.Append("audio configuration\n");
-                filedata.Append("  " + nameof(ac.dspBufferSize) + ac.dspBufferSize.ToString() + "\n");
-                filedata.Append("  " + nameof(ac.numRealVoices) + ac.numRealVoices.ToString() + "\n");
-                filedata.Append("  " + nameof(ac.numVirtualVoices) + ac.numVirtualVoices.ToString() + "\n");
-                filedata.Append("  " + nameof(ac.sampleRate) + ac.sampleRate.ToString() + "\n");
-                filedata.Append("  " + nameof(ac.speakerMode) + ac.speakerMode.ToString() + "\n");
-                filedata.Append("local variables\n");
-                filedata.Append("  " + nameof(tick) + tick.ToString() + "\n");
-                filedata.Append("  " + nameof(dsp) + dsp.ToString() + "\n");
-                filedata.Append("  " + nameof(dsp_curr) + dsp_curr.ToString() + "\n");
-                filedata.Append("  " + nameof(dsp_last) + dsp_last.ToString() + "\n");
-                filedata.Append("  " + nameof(delta) + delta.ToString() + "\n");
-                filedata.Append("class fields\n");
-                filedata.Append("  " + nameof(m_dspTime) + m_dspTime.Get().ToString() + "\n");
-                filedata.Append("  " + nameof(m_dspTime) + m_dspTime.Get().ToString() + "\n");
-                filedata.Append("  " + nameof(m_dspLastTime) + m_dspLastTime.Get().ToString() + "\n");
-                filedata.Append("  " + nameof(m_dspDelta) + m_dspDelta.Get().ToString() + "\n");
-                filedata.Append("  " + nameof(m_dspMaxOffset) + m_dspMaxOffset.ToString() + "\n");
-                filedata.Append("  " + nameof(m_dspMinOffset) + m_dspMinOffset.ToString() + "\n");
 
-                File.WriteAllText(Path.Combine(EntryPoint.path,  + CppBrige.GetSystemTick() + ".dump"), filedata.ToString());
-                CppBrige.GOGOGO_GO_TO_CRASH______________();
+            }
+
+            double unity = m_unityMainUpdateTime.GetTimeD();
+            m_unityTime.SetTimeD(unity);
+            long unity_curr = m_unityTime.Get();
+            long unity_last = m_unityLastTime.Get();
+            if (unity_curr < unity_last)
+            {
+                m_unitySkip++;
+            }
+            if (unity_curr > unity_last && m_unitySkip > 0)
+            {
+                m_unitySkip--;
+            }
+            if (unity_curr > unity_last && m_unitySkip == 0)
+            {
+                double delta = m_unityDelta.GetTimeD();
+                if (unity_last + delta * TimeConvert.I_Tick_Nano > unity_curr)
+                {
+                    m_unityError = (unity_last + delta * TimeConvert.I_Tick_Nano - unity_curr) / TimeConvert.I_Second_Nano + 0.0000001;
+                }
+                m_unityDelta.SetTimeD(m_unityError);
+                m_unityLastTime.SetTimeD(unity);
+            }
+            else
+            {
+                if (m_unityError >= tick)
+                {
+                    m_unityError -= tick;
+                }
+                else if (m_unityError != 0)
+                {
+                    m_unityDelta.SetTimeD(m_unityDelta.GetTimeD() + tick - m_unityError);
+                    m_unityError = 0;
+                }
+                else
+                {
+                    m_unityDelta.SetTimeD(m_unityDelta.GetTimeD() + tick);
+                }
             }
         }
 
@@ -184,7 +260,7 @@ namespace AsyncInputOptimize
                     ct = m_dspTime.GetTimeD();
                     lt = m_dspLastTime.GetTimeD();
                 } while (Math.Abs(ct - lt) > 0.0000001);
-                return ct + m_dspDelta.GetTimeD() / 10_000_000.0;
+                return ct + m_dspDelta.GetTimeD() / TimeConvert.D_Second_Tick;
             }
         }
 
@@ -197,8 +273,34 @@ namespace AsyncInputOptimize
                 {
                     ct = m_dspTime.Get();
                     lt = m_dspLastTime.Get();
-                } while (Math.Abs(ct - lt) > 100);
-                return (long)(ct / 100.0 + m_dspDelta.GetTimeD());
+                } while (Math.Abs(ct - lt) > TimeConvert.I_Tick_Nano);
+                return (long)(ct / TimeConvert.D_Tick_Nano + m_dspDelta.GetTimeD());
+            }
+        }
+        public static double unityTime
+        {
+            get
+            {
+                double ct, lt;
+                do
+                {
+                    ct = m_unityTime.GetTimeD();
+                    lt = m_unityLastTime.GetTimeD();
+                } while (Math.Abs(ct - lt) > 0.0000001);
+                return ct + m_unityDelta.GetTimeD() / TimeConvert.D_Second_Tick;
+            }
+        }
+        public static long unityTimeAsFileTIme
+        {
+            get
+            {
+                long ct, lt;
+                do
+                {
+                    ct = m_unityTime.Get();
+                    lt = m_unityLastTime.Get();
+                } while (Math.Abs(ct - lt) > TimeConvert.I_Tick_Nano);
+                return (long)(ct / TimeConvert.D_Tick_Nano + m_unityDelta.GetTimeD());
             }
         }
     }
