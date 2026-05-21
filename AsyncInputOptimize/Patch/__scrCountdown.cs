@@ -5,10 +5,10 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
-using UnityEngine;
 
 namespace Cover.Tweaks.Patches
 {
+    [HarmonyPatch(typeof(scrCountdown), "Update")]
     public static class __scrCountdown
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
