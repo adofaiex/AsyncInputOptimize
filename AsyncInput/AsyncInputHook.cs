@@ -152,7 +152,7 @@ namespace AsyncInput
         {
             if ((@this.state | (States)@this.stateMachine.GetState()) == States.PlayerControl)
             {
-                foreach (scrPlayer player in @this.playerManager)
+                foreach (scrPlayer player in ADOBase.playerManager)
                 {
                     SimulatedPlayerUpdate(player, AsyncInputData.currFrameTick);
                 }
@@ -163,7 +163,7 @@ namespace AsyncInput
         {
             if ((@this.state | (States)@this.stateMachine.GetState()) == States.PlayerControl)
             {
-                foreach (scrPlayer player in @this.playerManager)
+                foreach (scrPlayer player in ADOBase.playerManager)
                 {
                     Fast_SimulatedPlayerUpdate(player, value, state);
                 }
