@@ -72,12 +72,10 @@ namespace AsyncInputOptimize
         {
             cover_is_installer = FindMod("Cover", "Cover.dll");
             mtlib_is_installer = FindMod("ModsTagLib.Unity", "ModsTagLib.__Bootstrap.dll");
-            if (cover_is_installer) return true;
             if (a)
             {
                 harmony.PatchAll();
-                InterpolationTime.Awake();
-                WorkerThread.Start();
+                SafeDSPTime.Init();
             }
             else
             {
@@ -115,7 +113,7 @@ namespace AsyncInputOptimize
             GUILayout.Label("");
             GUILayout.EndVertical();
 
-            double sim_dsptime = InterpolationTime.dspTime;
+            double sim_dsptime = SafeDSPTime.InterpolationDSPTime;
             double dsptime = AudioSettings.dspTime;
             int buffer_size = AudioSettings.GetConfiguration().dspBufferSize;
             int sample_rate = AudioSettings.GetConfiguration().sampleRate;
@@ -132,64 +130,6 @@ namespace AsyncInputOptimize
 
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
-
-
-            GUILayout.Label("插值线程");
-            GUILayout.BeginHorizontal();
-            GUILayout.Space(16);
-
-            GUILayout.BeginVertical();
-            GUILayout.Label("Mode");
-            GUILayout.Label("Mode");
-            GUILayout.Label("更新消耗时间");
-            GUILayout.Label("每秒更新次数");
-            GUILayout.EndVertical();
-
-            GUILayout.BeginVertical(new GUIStyle(GUIStyle.none) { normal = gss, hover = gss, focused = gss, active = gss, onNormal = gss, onHover = gss, onFocused = gss, onActive = gss, border = new RectOffset(4, 4, 4, 4) });
-            GUILayout.Label("");
-            GUILayout.Label("");
-            GUILayout.Label("");
-            GUILayout.Label("");
-            GUILayout.EndVertical();
-
-            GUILayout.BeginVertical();
-            if (GUILayout.Button(WorkerThread._unsafeMode ? "<color=#3fffff><b>超高速更新 (<color=#ff0000><b>不安全</b></color>)</b></color>" : "超高速更新 (<color=#ff0000>不安全</color>)"))
-            {
-                WorkerThread._unsafeMode = !WorkerThread._unsafeMode;
-                WorkerThread._highMode = false;
-            }
-            if (GUILayout.Button(WorkerThread._highMode ? "<color=#3fffff><b>高速更新</b></color>" : "高速更新"))
-            {
-                WorkerThread._unsafeMode = false;
-                WorkerThread._highMode = !WorkerThread._highMode;
-            }
-            GUILayout.Label((WorkerThread.MainUpdate.Result.deltaTime / 10000f).ToString("F5") + "ms");
-            GUILayout.Label(WorkerThread.MainUpdate.Result.updatePerSecond.ToString().PadLeft(5));
-            GUILayout.EndVertical();
-
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
-
-            GUILayout.Label("");
-            if (cover_is_installer)
-            {
-                GUILayout.BeginHorizontal();
-                GUILayout.BeginVertical();
-                GUILayout.Label("(,,•́ . •̀,,)");
-                GUILayout.Label("(^・ω・^ ).....");
-                GUILayout.EndVertical();
-                GUILayout.BeginVertical();
-                GUILayout.Label(" | ");
-                GUILayout.Label(" | ");
-                GUILayout.EndVertical();
-                GUILayout.BeginVertical();
-                GUILayout.Label("喵? 你已经安装了<color=#3fffff>Cover</color>了喵, 直接用<color=#3fffff>Cover</color>的就行了喵");
-                GUILayout.Label("Mod补丁和工作线程我就给你禁用了喵~");
-                GUILayout.EndVertical();
-                GUILayout.FlexibleSpace();
-                GUILayout.EndHorizontal();
-            }
-            GUILayout.Label("");
         }
     }
 }

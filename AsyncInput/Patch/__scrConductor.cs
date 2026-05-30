@@ -1,26 +1,12 @@
-﻿/*
- * Copy in Cover Mod
- * Assembly: Cover.dll
- * NameSpace: Cover.Tweaks.Patches
- * Categoty: StaticClass
- * Name: __scrConductor
- * Flag: public auto ansi abstract sealed beforefieldinit flag(200000)
- * Extends: [mscorlib]System.Object
- */
-using HarmonyLib;
-using System;
+﻿using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
 
-namespace AsyncInputOptimize.Patch
+namespace AsyncInput.Patch
 {
-    [HarmonyPatch]
     public static class __scrConductor
     {
-        [HarmonyPatch(typeof(scrConductor), "Start")]
-        [HarmonyTranspiler]
         public static IEnumerable<CodeInstruction> Transpiler_Start(IEnumerable<CodeInstruction> instructions)
         {
             yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(AsyncInputHook), nameof(AsyncInputHook.ResetTime)));
@@ -30,8 +16,6 @@ namespace AsyncInputOptimize.Patch
             }
             yield break;
         }
-        [HarmonyPatch(typeof(scrConductor), "Rewind")]
-        [HarmonyTranspiler]
         public static IEnumerable<CodeInstruction> Transpiler_Rewind(IEnumerable<CodeInstruction> instructions)
         {
             yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(AsyncInputHook), nameof(AsyncInputHook.ResetTime)));
@@ -41,9 +25,7 @@ namespace AsyncInputOptimize.Patch
             }
             yield break;
         }
-        [HarmonyPatch(typeof(scrConductor), "Update")]
-        [HarmonyTranspiler]
-        public static IEnumerable<CodeInstruction> Transpiler_Update(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        public static IEnumerable<CodeInstruction> Transpiler_Update(IEnumerable<CodeInstruction> instructions)
         {
             yield return new CodeInstruction(OpCodes.Ldarg_0);
             yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(AsyncInputHook), nameof(AsyncInputHook.ConductorUpdate)));

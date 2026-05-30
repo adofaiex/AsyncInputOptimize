@@ -1,0 +1,87 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net481</TargetFramework>
+		<Nullable>disable</Nullable>
+		<OutputType>Library</OutputType>
+		<LangVersion>9.0</LangVersion>
+		<UseWindowsForms>true</UseWindowsForms>
+		<ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+		<RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+		<PlatformTarget>x64</PlatformTarget>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<Configurations>R136_2_9_8;Main</Configurations>
+		<Platforms>x64</Platforms>
+		<DebugType>none</DebugType>
+		<IsPublishable>False</IsPublishable>
+		<Optimize>True</Optimize>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Main|x64'">
+		<NoStdLib>true</NoStdLib>
+		<FrameworkPathOverride>D:\data\User.modstag.Project.CSharp\ADanceOfFireAndIce\__running\A Dance of Fire and Ice_Data\Managed</FrameworkPathOverride>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='R136_2_9_8|x64'">
+		<NoStdLib>true</NoStdLib>
+		<FrameworkPathOverride>D:\data\User.modstag.Project.CSharp\ADanceOfFireAndIce\__running_136\A Dance of Fire and Ice_Data\Managed</FrameworkPathOverride>
+	</PropertyGroup>
+	<ItemGroup>
+		<Reference Include="Assembly-CSharp" />
+		<Reference Include="netstandard" />
+		<Reference Include="RDTools" />
+		<Reference Include="SkyHook.Unity" />
+		<Reference Include="mscorlib" />
+		<Reference Include="System" />
+		<Reference Include="System.Core" />
+		<Reference Include="System.Data" />
+		<Reference Include="System.EnterpriseServices" />
+		<Reference Include="System.IO.Compression" />
+		<Reference Include="System.IO.Compression.FileSystem" />
+		<Reference Include="System.Runtime.Serialization" />
+		<Reference Include="Unity.TextMeshPro" />
+		<Reference Include="UnityEngine" />
+		<Reference Include="UnityEngine.AudioModule" />
+		<Reference Include="UnityEngine.CoreModule" />
+		<Reference Include="UnityEngine.IMGUIModule" />
+		<Reference Include="UnityEngine.InputModule" />
+		<Reference Include="UnityEngine.UI" />
+		<Reference Include="UnityModManager">
+			<HintPath>..\..\__lib\UnityModManager.dll</HintPath>
+		</Reference>
+		<Reference Include="0Harmony">
+			<HintPath>..\..\__lib\0Harmony.dll</HintPath>
+		</Reference>
+		<Reference Include="ModsTagLib">
+			<HintPath>..\..\..\__global\ModsTagLib\__result\ModsTagLib.dll</HintPath>
+		</Reference>
+		<Reference Include="ModsTagLib.NewtonsoftJson">
+			<HintPath>..\..\..\__global\ModsTagLib\__result\ModsTagLib.NewtonsoftJson.dll</HintPath>
+		</Reference>
+		<Reference Include="ModsTagLib.SystemCore">
+			<HintPath>..\..\..\__global\ModsTagLib\__result\ModsTagLib.SystemCore.dll</HintPath>
+		</Reference>
+		<Reference Include="ModsTagLib.Unity">
+			<HintPath>..\..\..\__global\ModsTagLib\__result\ModsTagLib.Unity.dll</HintPath>
+		</Reference>
+		<Reference Include="ModsTagLib.Win32API">
+			<HintPath>..\..\..\__global\ModsTagLib\__result\ModsTagLib.Win32API.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+	<Target Name="CopyModFilesAfterBuild" AfterTargets="Build">
+
+		<Exec Condition="'$(Configuration)|$(Platform)'=='Main|x64'"
+			  Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running\Mods\AsyncInput\&quot;" />
+		<Exec Condition="'$(Configuration)|$(Platform)'=='Main|x64'"
+			  Command="xcopy /Y &quot;$(SolutionDir)..\..\__global\ModsTagLib\__result\ModsTagLib.Unity&quot; &quot;$(SolutionDir)..\__running\Mods\ModsTagLib.Unity\&quot;" />
+
+		<Exec Condition="'$(Configuration)|$(Platform)'=='R136_2_9_8|x64'"
+			  Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running_136\Mods\AsyncInput\&quot;" />
+		<Exec Condition="'$(Configuration)|$(Platform)'=='R136_2_9_8|x64'"
+			  Command="xcopy /Y &quot;$(SolutionDir)..\..\__global\ModsTagLib\__result\ModsTagLib.Unity&quot; &quot;$(SolutionDir)..\__running_136\Mods\ModsTagLib.Unity\&quot;" />
+	</Target>
+	<Target Name="PurgeImplicitFrameworkMacros" BeforeTargets="BeforeCompile;CoreCompile">
+		<PropertyGroup>
+			<DefineConstants>$([System.Text.RegularExpressions.Regex]::Replace('$(DefineConstants)', 'NET\d*_OR_GREATER;?', ''))</DefineConstants>
+
+			<DefineConstants>$([System.Text.RegularExpressions.Regex]::Replace('$(DefineConstants)', ';{2,}', ';'))</DefineConstants>
+		</PropertyGroup>
+	</Target>
+</Project>

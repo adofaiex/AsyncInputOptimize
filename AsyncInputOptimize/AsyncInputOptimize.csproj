@@ -24,12 +24,30 @@
     <LangVersion>9.0</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'R136_2_9_8|x64' ">
+    <OutputPath>bin\x64\2.9.8 r136\</OutputPath>
+    <DefineConstants>TRACE;WIN32</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>9.0</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
       <HintPath>..\..\__running\A Dance of Fire and Ice_Data\Managed\UnityModManager\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\__running\A Dance of Fire and Ice_Data\Managed\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="RDTools, Version=1.0.8630.31434, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\__running\A Dance of Fire and Ice_Data\Managed\RDTools.dll</HintPath>
+    </Reference>
+    <Reference Include="SkyHook.Unity, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\__running\A Dance of Fire and Ice_Data\Managed\SkyHook.Unity.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -68,15 +86,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AsyncInputData.cs" />
+    <Compile Include="AsyncInputHook.cs" />
     <Compile Include="CppBrige.cs" />
-    <Compile Include="DSPTimeInterpolation.cs" />
     <Compile Include="EntryPoint.cs" />
-    <Compile Include="Patch\__scrCountdown.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Patch\__scrConductor.cs" />
-    <Compile Include="TimeConvert.cs" />
-    <Compile Include="TimeMethodCounter.cs" />
-    <Compile Include="WorkerThread.cs" />
+    <Compile Include="SafeDSPTime.cs" />
+    <Compile Include="SemiADOToolsLib\ADORef.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

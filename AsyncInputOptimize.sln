@@ -12,14 +12,26 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsyncInput", "AsyncInput\AsyncInput.csproj", "{A51F639F-C23D-4B93-AE74-0A0AB7266B05}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Main|x64 = Main|x64
+		R136_2_9_8|x64 = R136_2_9_8|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{9CCF1344-C706-4068-BA4D-EB688D532191}.Main|x64.ActiveCfg = Main|x64
+		{9CCF1344-C706-4068-BA4D-EB688D532191}.Main|x64.Build.0 = Main|x64
+		{9CCF1344-C706-4068-BA4D-EB688D532191}.R136_2_9_8|x64.ActiveCfg = R136_2_9_8|x64
+		{9CCF1344-C706-4068-BA4D-EB688D532191}.R136_2_9_8|x64.Build.0 = R136_2_9_8|x64
 		{FC6B16D8-6EC8-4256-9D68-FD74C116C17E}.Main|x64.ActiveCfg = Main|x64
 		{FC6B16D8-6EC8-4256-9D68-FD74C116C17E}.Main|x64.Build.0 = Main|x64
+		{FC6B16D8-6EC8-4256-9D68-FD74C116C17E}.R136_2_9_8|x64.ActiveCfg = Main|x64
+		{FC6B16D8-6EC8-4256-9D68-FD74C116C17E}.R136_2_9_8|x64.Build.0 = Main|x64
+		{A51F639F-C23D-4B93-AE74-0A0AB7266B05}.Main|x64.ActiveCfg = Main|x64
+		{A51F639F-C23D-4B93-AE74-0A0AB7266B05}.Main|x64.Build.0 = Main|x64
+		{A51F639F-C23D-4B93-AE74-0A0AB7266B05}.R136_2_9_8|x64.ActiveCfg = R136_2_9_8|x64
+		{A51F639F-C23D-4B93-AE74-0A0AB7266B05}.R136_2_9_8|x64.Build.0 = R136_2_9_8|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
