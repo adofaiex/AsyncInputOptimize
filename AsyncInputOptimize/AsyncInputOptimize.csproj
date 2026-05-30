@@ -90,6 +90,7 @@
     <Compile Include="AsyncInputHook.cs" />
     <Compile Include="CppBrige.cs" />
     <Compile Include="EntryPoint.cs" />
+    <Compile Include="Patch\UnityEngine__SceneManagement__SceneManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Patch\__scrConductor.cs" />
     <Compile Include="SafeDSPTime.cs" />
