@@ -69,6 +69,7 @@ namespace AsyncInput
             AsyncInputData.prevFrameTick = AsyncInputData.currFrameTick;
             AsyncInputData.currFrameTick = (ulong)ModsTagCLib.PreciseFileTime();
             AsyncInputData.dspTime = (AsyncInputData.currFrameTick - AsyncInputData.offsetTick) / 10000000.0;
+            AsyncInputData.offsetTick_REAL = AsyncInputData.currFrameTick - (ulong)SafeDSPTime.InterpolationDSPTimeAsFileTime;
 
             AsyncInputManager.prevFrameTick = AsyncInputData.prevFrameTick;
             AsyncInputManager.currFrameTick = AsyncInputData.currFrameTick;

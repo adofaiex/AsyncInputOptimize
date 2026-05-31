@@ -75,6 +75,7 @@ namespace AsyncInputOptimize
             {
                 xrun = false;
                 AsyncInputHook.ResetTime();
+                EntryPoint.logger.Warning("DSPTime XRUN Error");
             }
             static double OutF32Offset9(float val)
             {

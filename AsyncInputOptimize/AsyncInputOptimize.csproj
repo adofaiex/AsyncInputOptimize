@@ -1,104 +1,85 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9CCF1344-C706-4068-BA4D-EB688D532191}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AsyncInputOptimize</RootNamespace>
-    <AssemblyName>AsyncInputOptimize</AssemblyName>
-    <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <LangVersion>9.0</LangVersion>
-    <Deterministic>true</Deterministic>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Main|x64'">
-    <OutputPath>bin\</OutputPath>
-    <DefineConstants>TRACE;WIN32</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>9.0</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'R136_2_9_8|x64' ">
-    <OutputPath>bin\x64\2.9.8 r136\</OutputPath>
-    <DefineConstants>TRACE;WIN32</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>9.0</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="0Harmony">
-      <HintPath>..\..\__running\A Dance of Fire and Ice_Data\Managed\UnityModManager\0Harmony.dll</HintPath>
-    </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\__running\A Dance of Fire and Ice_Data\Managed\Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="RDTools, Version=1.0.8630.31434, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\__running\A Dance of Fire and Ice_Data\Managed\RDTools.dll</HintPath>
-    </Reference>
-    <Reference Include="SkyHook.Unity, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\__running\A Dance of Fire and Ice_Data\Managed\SkyHook.Unity.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-    <Reference Include="UnityEngine">
-      <HintPath>..\..\..\__global\ModsTagLib\__lib\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.AudioModule">
-      <HintPath>..\..\__running\A Dance of Fire and Ice_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\..\__global\ModsTagLib\__lib\UnityEngine.CoreModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.DSPGraphModule">
-      <HintPath>..\..\__running\A Dance of Fire and Ice_Data\Managed\UnityEngine.DSPGraphModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\__global\ModsTagLib\__lib\UnityEngine.IMGUIModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\__global\ModsTagLib\__lib\UnityEngine.UI.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\__global\ModsTagLib\__lib\UnityEngine.UIModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityModManager">
-      <HintPath>..\..\..\__global\ModsTagLib\__lib\UnityModManager.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AsyncInputData.cs" />
-    <Compile Include="AsyncInputHook.cs" />
-    <Compile Include="CppBrige.cs" />
-    <Compile Include="EntryPoint.cs" />
-    <Compile Include="Patch\UnityEngine__SceneManagement__SceneManager.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Patch\__scrConductor.cs" />
-    <Compile Include="SafeDSPTime.cs" />
-    <Compile Include="SemiADOToolsLib\ADORef.cs" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>cd "$(ProjectDir)"
-xcopy /Y "bin\AsyncInputOptimize.dll" "..\..\__running\Mods\AsyncInputOptimize"</PostBuildEvent>
-  </PropertyGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net481</TargetFramework>
+		<Nullable>disable</Nullable>
+		<OutputType>Library</OutputType>
+		<LangVersion>9.0</LangVersion>
+		<UseWindowsForms>true</UseWindowsForms>
+		<ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+		<RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+		<PlatformTarget>x64</PlatformTarget>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<Configurations>R136_2_9_8;Main</Configurations>
+		<Platforms>x64</Platforms>
+		<DebugType>none</DebugType>
+		<IsPublishable>False</IsPublishable>
+		<Optimize>True</Optimize>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Main|x64'">
+		<NoStdLib>true</NoStdLib>
+		<FrameworkPathOverride>D:\data\User.modstag.Project.CSharp\ADanceOfFireAndIce\__running\A Dance of Fire and Ice_Data\Managed</FrameworkPathOverride>
+		<DefineConstants>$(DefineConstants);WIN32</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='R136_2_9_8|x64'">
+		<NoStdLib>true</NoStdLib>
+		<FrameworkPathOverride>D:\data\User.modstag.Project.CSharp\ADanceOfFireAndIce\__running_136\A Dance of Fire and Ice_Data\Managed</FrameworkPathOverride>
+		<DefineConstants>$(DefineConstants);WIN32</DefineConstants>
+	</PropertyGroup>
+	<ItemGroup>
+		<Reference Include="Assembly-CSharp" />
+		<Reference Include="netstandard" />
+		<Reference Include="RDTools" />
+		<Reference Include="SkyHook.Unity" />
+		<Reference Include="mscorlib" />
+		<Reference Include="System" />
+		<Reference Include="System.Core" />
+		<Reference Include="System.Data" />
+		<Reference Include="System.EnterpriseServices" />
+		<Reference Include="System.IO.Compression" />
+		<Reference Include="System.IO.Compression.FileSystem" />
+		<Reference Include="System.Runtime.Serialization" />
+		<Reference Include="Unity.TextMeshPro" />
+		<Reference Include="UnityEngine" />
+		<Reference Include="UnityEngine.AudioModule" />
+		<Reference Include="UnityEngine.CoreModule" />
+		<Reference Include="UnityEngine.IMGUIModule" />
+		<Reference Include="UnityEngine.InputModule" />
+		<Reference Include="UnityEngine.UI" />
+		<Reference Include="UnityModManager">
+			<HintPath>..\..\__lib\UnityModManager.dll</HintPath>
+		</Reference>
+		<Reference Include="0Harmony">
+			<HintPath>..\..\__lib\0Harmony.dll</HintPath>
+		</Reference>
+		<Reference Include="ModsTagLib">
+			<HintPath>..\..\..\__global\ModsTagLib\__result\ModsTagLib.dll</HintPath>
+		</Reference>
+		<Reference Include="ModsTagLib.NewtonsoftJson">
+			<HintPath>..\..\..\__global\ModsTagLib\__result\ModsTagLib.NewtonsoftJson.dll</HintPath>
+		</Reference>
+		<Reference Include="ModsTagLib.SystemCore">
+			<HintPath>..\..\..\__global\ModsTagLib\__result\ModsTagLib.SystemCore.dll</HintPath>
+		</Reference>
+		<Reference Include="ModsTagLib.Unity">
+			<HintPath>..\..\..\__global\ModsTagLib\__result\ModsTagLib.Unity.dll</HintPath>
+		</Reference>
+		<Reference Include="ModsTagLib.Win32API">
+			<HintPath>..\..\..\__global\ModsTagLib\__result\ModsTagLib.Win32API.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+	<Target Name="CopyModFilesAfterBuild" AfterTargets="Build">
+
+		<Exec Condition="'$(Configuration)|$(Platform)'=='Main|x64'" Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running\Mods\AsyncInputOptimize\&quot;" />
+		<Exec Condition="'$(Configuration)|$(Platform)'=='Main|x64'" Command="xcopy /Y &quot;$(SolutionDir)..\..\__global\ModsTagLib\__result\ModsTagLib.Unity&quot; &quot;$(SolutionDir)..\__running\Mods\ModsTagLib.Unity\&quot;" />
+
+		<Exec Condition="'$(Configuration)|$(Platform)'=='R136_2_9_8|x64'" Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running_136\Mods\AsyncInputOptimize\&quot;" />
+		<Exec Condition="'$(Configuration)|$(Platform)'=='R136_2_9_8|x64'" Command="xcopy /Y &quot;$(SolutionDir)..\..\__global\ModsTagLib\__result\ModsTagLib.Unity&quot; &quot;$(SolutionDir)..\__running_136\Mods\ModsTagLib.Unity\&quot;" />
+	</Target>
+	<Target Name="PurgeImplicitFrameworkMacros" BeforeTargets="BeforeCompile;CoreCompile">
+		<PropertyGroup>
+			<DefineConstants>$([System.Text.RegularExpressions.Regex]::Replace('$(DefineConstants)', 'NET\d*_OR_GREATER;?', ''))</DefineConstants>
+
+			<DefineConstants>$([System.Text.RegularExpressions.Regex]::Replace('$(DefineConstants)', ';{2,}', ';'))</DefineConstants>
+		</PropertyGroup>
+	</Target>
 </Project>

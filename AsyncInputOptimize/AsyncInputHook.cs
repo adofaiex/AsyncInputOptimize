@@ -36,27 +36,29 @@ namespace AsyncInputOptimize
             previousFrameTime.SetValue(@this, time);
             if (AsyncInputManager.isActive)
             {
-                UpdateTime(@this);
+                AsyncInputData.prevFrameTick = AsyncInputData.currFrameTick;
+                AsyncInputData.currFrameTick = (ulong)CppBrige.GetSystemTick() + 504911520000000000;
+                AsyncInputData.dspTime = (AsyncInputData.currFrameTick - AsyncInputData.offsetTick) / 10000000.0;
+                AsyncInputData.offsetTick_REAL = AsyncInputData.currFrameTick - (ulong)SafeDSPTime.InterpolationDSPTimeAsFileTime;
+                if (System.Math.Abs((long)AsyncInputData.offsetTick_REAL - (long)AsyncInputData.offsetTick) > 200000)
+                {
+                    ResetTime();
+                    EntryPoint.logger.Warning("SystemTime XRUN Error");
+                }
+
+                AsyncInputManager.prevFrameTick = AsyncInputData.prevFrameTick;
+                AsyncInputManager.currFrameTick = AsyncInputData.currFrameTick;
+                AsyncInputManager.offsetTick = AsyncInputData.offsetTick;
+                AsyncInputManager.previousFrameTime = Time.timeAsDouble;
+                AsyncInputManager.offsetTickUpdated = true;
+
+                if (ADOBase.controller != null && !ADOBase.controller.paused)
+                {
+                    ADOBase.controller.UpdateInput();
+                }
             }
             @this.prev_dspTime = @this.dspTime;
             @this.prev_unityDspTime = dspTime;
-        }
-        public static void UpdateTime(scrConductor @this)
-        {
-            AsyncInputData.prevFrameTick = AsyncInputData.currFrameTick;
-            AsyncInputData.currFrameTick = (ulong)CppBrige.GetSystemTick() + 504911520000000000;
-            AsyncInputData.dspTime = (AsyncInputData.currFrameTick - AsyncInputData.offsetTick) / 10000000.0;
-
-            AsyncInputManager.prevFrameTick = AsyncInputData.prevFrameTick;
-            AsyncInputManager.currFrameTick = AsyncInputData.currFrameTick;
-            AsyncInputManager.offsetTick = AsyncInputData.offsetTick;
-            AsyncInputManager.previousFrameTime = Time.timeAsDouble;
-            AsyncInputManager.offsetTickUpdated = true;
-
-            if (ADOBase.controller != null && !ADOBase.controller.paused)
-            {
-                ADOBase.controller.UpdateInput();
-            }
         }
     }
 }

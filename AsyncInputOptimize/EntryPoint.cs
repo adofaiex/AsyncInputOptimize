@@ -92,17 +92,24 @@ namespace AsyncInputOptimize
             GUILayout.BeginHorizontal();
             GUILayout.Space(16);
 
-            GUILayout.BeginVertical();
-            GUILayout.Label("插值DSPTime");
-            GUILayout.Label("音频DSPTime");
-            GUILayout.Label("DSPTime相差");
+            GUILayout.BeginVertical(GUILayout.MinWidth(160));
+            GUILayout.Label("Inter. DSPTime     ");
+            GUILayout.Label("Original DSPTime   ");
+            GUILayout.Label("DSPTime Delta      ");
             GUILayout.Label("");
-            GUILayout.Label("音频缓冲大小");
-            GUILayout.Label("音频采样率");
-            GUILayout.Label("音频DSPTime精度");
+            GUILayout.Label("Audio Buffer Size  ");
+            GUILayout.Label("Audio Simple Rate  ");
+            GUILayout.Label("DSPTime Precise    ");
+            GUILayout.Label("");
+            GUILayout.Label("Real OffsetTick    ");
+            GUILayout.Label("AID OffsetTick     ");
+            GUILayout.Label("OffsetTick Delta   ");
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical(new GUIStyle(GUIStyle.none) { normal = gss, hover = gss, focused = gss, active = gss, onNormal = gss, onHover = gss, onFocused = gss, onActive = gss, border = new RectOffset(4, 4, 4, 4) });
+            GUILayout.Label("");
+            GUILayout.Label("");
+            GUILayout.Label("");
             GUILayout.Label("");
             GUILayout.Label("");
             GUILayout.Label("");
@@ -117,8 +124,10 @@ namespace AsyncInputOptimize
             double dsptime = AudioSettings.dspTime;
             int buffer_size = AudioSettings.GetConfiguration().dspBufferSize;
             int sample_rate = AudioSettings.GetConfiguration().sampleRate;
+            long real_ot = (long)AsyncInputData.offsetTick_REAL;
+            long aid_ot = (long)AsyncInputData.offsetTick;
 
-            GUILayout.BeginVertical();
+            GUILayout.BeginVertical(GUILayout.MinWidth(160));
             GUILayout.Label(sim_dsptime.ToString("f12"));
             GUILayout.Label(dsptime.ToString("f12"));
             GUILayout.Label((dsptime - sim_dsptime).ToString("f12"));
@@ -126,6 +135,10 @@ namespace AsyncInputOptimize
             GUILayout.Label(buffer_size.ToString());
             GUILayout.Label(sample_rate.ToString());
             GUILayout.Label((buffer_size / (double)sample_rate).ToString("f17") + "s");
+            GUILayout.Label("");
+            GUILayout.Label(real_ot.ToString().PadLeft(19, '0'));
+            GUILayout.Label(aid_ot.ToString().PadLeft(19, '0'));
+            GUILayout.Label((real_ot - aid_ot).ToString().PadLeft(10));
             GUILayout.EndVertical();
 
             GUILayout.FlexibleSpace();

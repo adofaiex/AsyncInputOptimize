@@ -11,6 +11,7 @@ namespace AsyncInput
         public static ulong currFrameTick;
         public static ulong prevFrameTick;
         public static ulong offsetTick;
+        public static ulong offsetTick_REAL;
         public static double dspTime;
 
         public static readonly SinglePCCircularQueue_Const<AsyncKeyEvent> keyQueue = new(16);
