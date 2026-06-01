@@ -1,18 +1,7 @@
-﻿/*
- * Copy in Cover Mod
- * Assembly: Cover.dll
- * NameSpace: Cover.Tweaks.Patches
- * Categoty: StaticClass
- * Name: __scrConductor
- * Flag: public auto ansi abstract sealed beforefieldinit flag(200000)
- * Extends: [mscorlib]System.Object
- */
-using HarmonyLib;
-using System;
+﻿using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
 
 namespace AsyncInputOptimize.Patch
 {

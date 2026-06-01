@@ -23,7 +23,11 @@ namespace AsyncInputOptimize
                 scrController.CheckForAudioOutputChange();
                 scrConductor.isAudioOutputDeviceChanged = false;
             }
+#if MAIN
             PlatformHelper.instance.Update();
+#elif R136_2_9_8
+            PlatformHelper.Instance.Update();
+#endif
             if (dspTime != (double)lastReportedPlayheadPosition.GetValue(@this))
             {
                 @this.dspTime = dspTime;
@@ -51,6 +55,10 @@ namespace AsyncInputOptimize
                 AsyncInputManager.offsetTick = AsyncInputData.offsetTick;
                 AsyncInputManager.previousFrameTime = Time.timeAsDouble;
                 AsyncInputManager.offsetTickUpdated = true;
+#if R136_2_9_8
+                AsyncInputManager.dspTime = AsyncInputData.dspTime;
+                AsyncInputManager.dspTimeSong = (double)dspTimeSong.GetValue(@this);
+#endif
 
                 if (ADOBase.controller != null && !ADOBase.controller.paused)
                 {

@@ -50,9 +50,4 @@ namespace AsyncInput.SemiADOToolsLib
         public static readonly RMAction<scrController, ulong?> UpdateHoldKeys = MethodAct<scrController, ulong?>(@this.GetMethod(nameof(UpdateHoldKeys), AccessTools.all));
 #endif
     }
-    public static class ADORef_StateEngine
-    {
-        public static readonly Type @this = typeof(StateEngine);
-        public static readonly RFReference<StateMapping, StateEngine> destinationState = TryFieldRef<StateMapping, StateEngine>(nameof(destinationState));
-    }
 }

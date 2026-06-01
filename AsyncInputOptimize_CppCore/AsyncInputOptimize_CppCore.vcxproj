@@ -111,7 +111,9 @@
     <PostBuildEvent>
       <Command>cd $(TargetDir)
 xcopy /Y "$(TargetName).pdb" "..\..\..\..\__running\Mods\AsyncInputOptimize"
-xcopy /Y "$(TargetName).dll" "..\..\..\..\__running\Mods\AsyncInputOptimize"</Command>
+xcopy /Y "$(TargetName).dll" "..\..\..\..\__running\Mods\AsyncInputOptimize"
+xcopy /Y "$(TargetName).pdb" "..\..\..\..\__running_136\Mods\AsyncInputOptimize"
+xcopy /Y "$(TargetName).dll" "..\..\..\..\__running_136\Mods\AsyncInputOptimize"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

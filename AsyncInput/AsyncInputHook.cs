@@ -70,6 +70,11 @@ namespace AsyncInput
             AsyncInputData.currFrameTick = (ulong)ModsTagCLib.PreciseFileTime();
             AsyncInputData.dspTime = (AsyncInputData.currFrameTick - AsyncInputData.offsetTick) / 10000000.0;
             AsyncInputData.offsetTick_REAL = AsyncInputData.currFrameTick - (ulong)SafeDSPTime.InterpolationDSPTimeAsFileTime;
+            if (System.Math.Abs((long)AsyncInputData.offsetTick_REAL - (long)AsyncInputData.offsetTick) > 200000)
+            {
+                ResetTime();
+                Starter.instance.log.WARN("SystemTime XRUN Error");
+            }
 
             AsyncInputManager.prevFrameTick = AsyncInputData.prevFrameTick;
             AsyncInputManager.currFrameTick = AsyncInputData.currFrameTick;
@@ -260,7 +265,7 @@ namespace AsyncInput
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void ProcessKeyInputs(scrController @this)
         {
-            if ((@this.state | (States)this.stateMachine.GetState()) == States.PlayerControl)
+            if ((@this.state | (States)@this.stateMachine.GetState()) == States.PlayerControl)
             {
                 SimulatedPlayerUpdate(@this, AsyncInputData.currFrameTick);
             }
@@ -268,7 +273,7 @@ namespace AsyncInput
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void ProcessKeyInputs(scrController @this, ulong value, bool state)
         {
-            if ((@this.state | (States)this.stateMachine.GetState()) == States.PlayerControl)
+            if ((@this.state | (States)@this.stateMachine.GetState()) == States.PlayerControl)
             {
                 Fast_SimulatedPlayerUpdate(@this, value, state);
             }
