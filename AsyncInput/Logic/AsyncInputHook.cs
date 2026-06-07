@@ -2,20 +2,83 @@
 using ModsTagLib;
 using ModsTagLib.Unity;
 using ModsTagLib.Win32;
-using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-#if MAIN
+#if RELEASE || BETA || ALPHA
 using static AsyncInput.SemiADOToolsLib.ADORef_scrPlayer;
 #endif
 using static AsyncInput.SemiADOToolsLib.ADORef_scrController;
 using static AsyncInput.SemiADOToolsLib.ADORef_scrConductor;
 
-namespace AsyncInput
+namespace AsyncInput.Logic
 {
     public static unsafe class AsyncInputHook
     {
+        public static void ResetTime()
+        {
+            SafeDSPTime.SetOffset(0);
+            AsyncInputData.prevFrameTick = AsyncInputData.currFrameTick;
+            AsyncInputData.currFrameTick = (ulong)ModsTagCLib.PreciseFileTime();
+            AsyncInputData.offsetTick = AsyncInputData.currFrameTick - (ulong)SafeDSPTime.InterpolationDSPTimeAsFileTime;
+            AsyncInputData.dspTime = SafeDSPTime.InterpolationDSPTime;
+        }
+        public static void ConductorUpdate(scrConductor @this)
+        {
+        JMP_RELOAD:
+            double dspTime = SafeDSPTime.InterpolationDSPTime;
+            double time = Time.unscaledTimeAsDouble;
+            @this.dspTime = dspTime;
+            lastReportedPlayheadPosition.set(@this, dspTime);
+            previousFrameTime.set(@this, time);
+            if (AsyncInputManager.isActive)
+            {
+                double audio_precise = SafeDSPTime.GetAuidoPrecise();
+                AsyncInputData.prevFrameTick = AsyncInputData.currFrameTick;
+                AsyncInputData.currFrameTick = (ulong)ModsTagCLib.PreciseFileTime();
+                AsyncInputData.dspTime = (AsyncInputData.currFrameTick - AsyncInputData.offsetTick) / 10000000.0;
+                AsyncInputData.offsetTick_REAL = AsyncInputData.currFrameTick - (ulong)SafeDSPTime.InterpolationDSPTimeAsFileTime;
+                AsyncInputData.offsetTicks[AsyncInputData.offsetTicksIndex++] = AsyncInputData.offsetTick_REAL;
+                long delta = (long)AsyncInputData.offsetTick_REAL - (long)AsyncInputData.offsetTick;
+
+                if (System.Math.Abs(delta) > audio_precise * 10000000 * 4)
+                {
+                    AsyncInputData.offsetTicksIndex = 0;
+                    SafeDSPTime.AddOffset(delta);
+                    Starter.instance.log.WARN("DSPTime XRUN Error");
+                    goto JMP_RELOAD;
+                }
+                if (AsyncInputData.offsetTicksIndex == 30)
+                {
+                    AsyncInputData.offsetTicksIndex = 0;
+                    ulong datas = 0;
+                    foreach (ulong val in AsyncInputData.offsetTicks)
+                        datas += val;
+                    datas = datas / 30;
+                    delta = (long)datas - (long)AsyncInputData.offsetTick;
+                    if (System.Math.Abs(delta) > audio_precise * 5000000)
+                    {
+                        SafeDSPTime.AddOffset(delta);
+                        Starter.instance.log.INFO("Offset fix");
+                    }
+                }
+
+                AsyncInputManager.prevFrameTick = AsyncInputData.prevFrameTick;
+                AsyncInputManager.currFrameTick = AsyncInputData.currFrameTick;
+                AsyncInputManager.offsetTick = AsyncInputData.offsetTick;
+                AsyncInputManager.previousFrameTime = Time.timeAsDouble;
+                AsyncInputManager.offsetTickUpdated = true;
+#if ALPHA_2_9_8_R136
+                AsyncInputManager.dspTime = AsyncInputData.dspTime;
+                AsyncInputManager.dspTimeSong = dspTimeSong.get(@this);
+#endif
+
+                if (ADOBase.controller != null && !ADOBase.controller.paused)
+                    ADOBase.controller.UpdateInput();
+            }
+            @this.prev_dspTime = @this.dspTime;
+            @this.prev_unityDspTime = dspTime;
+        }
         public static void Hook(InputManager.FastPackage package)
         {
             if (!AsyncInputData.enabled)
@@ -25,72 +88,6 @@ namespace AsyncInput
             ake.key = (VirtualKeys)package.vkCode;
             ake.state = package.flags == 1;
             AsyncInputData.keyQueue.Enqueue(ake);
-        }
-        public static void ResetTime()
-        {
-            AsyncInputData.prevFrameTick = AsyncInputData.currFrameTick;
-            AsyncInputData.currFrameTick = (ulong)ModsTagCLib.PreciseFileTime();
-            AsyncInputData.offsetTick = AsyncInputData.currFrameTick - (ulong)SafeDSPTime.InterpolationDSPTimeAsFileTime;
-            AsyncInputData.dspTime = SafeDSPTime.InterpolationDSPTime;
-        }
-        public static void ConductorUpdate(scrConductor @this)
-        {
-            double dspTime = AudioSettings.dspTime;
-            double time = Time.unscaledTimeAsDouble;
-            if (scrConductor.isAudioOutputDeviceChanged)
-            {
-                scrController.CheckForAudioOutputChange();
-                scrConductor.isAudioOutputDeviceChanged = false;
-            }
-#if MAIN
-            PlatformHelper.instance.Update();
-#elif R136_2_9_8
-            PlatformHelper.Instance.Update();
-#endif
-            if (dspTime != lastReportedPlayheadPosition.get(@this))
-            {
-                @this.dspTime = dspTime;
-                lastReportedPlayheadPosition.set(@this, dspTime);
-            }
-            else if (!AudioListener.pause && Application.isFocused && time - previousFrameTime.get(@this) < 0.1)
-            {
-                @this.dspTime += time - previousFrameTime.get(@this);
-            }
-            previousFrameTime.set(@this, time);
-            if (AsyncInputManager.isActive)
-            {
-                UpdateTime(@this);
-            }
-            @this.prev_dspTime = @this.dspTime;
-            @this.prev_unityDspTime = dspTime;
-        }
-        public static void UpdateTime(scrConductor @this)
-        {
-            AsyncInputData.prevFrameTick = AsyncInputData.currFrameTick;
-            AsyncInputData.currFrameTick = (ulong)ModsTagCLib.PreciseFileTime();
-            AsyncInputData.dspTime = (AsyncInputData.currFrameTick - AsyncInputData.offsetTick) / 10000000.0;
-            AsyncInputData.offsetTick_REAL = AsyncInputData.currFrameTick - (ulong)SafeDSPTime.InterpolationDSPTimeAsFileTime;
-            if (System.Math.Abs((long)AsyncInputData.offsetTick_REAL - (long)AsyncInputData.offsetTick) > 200000)
-            {
-                ResetTime();
-                Starter.instance.log.WARN("SystemTime XRUN Error");
-            }
-
-            AsyncInputManager.prevFrameTick = AsyncInputData.prevFrameTick;
-            AsyncInputManager.currFrameTick = AsyncInputData.currFrameTick;
-            AsyncInputManager.offsetTick = AsyncInputData.offsetTick;
-            AsyncInputManager.previousFrameTime = Time.timeAsDouble;
-            AsyncInputManager.offsetTickUpdated = true;
-#if R136_2_9_8
-            AsyncInputManager.dspTime = AsyncInputData.dspTime;
-            AsyncInputManager.dspTimeSong = dspTimeSong.get(@this);
-#endif
-
-
-            if (ADOBase.controller != null && !ADOBase.controller.paused)
-            {
-                UpdateInput(ADOBase.controller);
-            }
         }
         public static unsafe void UnInput()
         {
@@ -103,13 +100,13 @@ namespace AsyncInput
                 _allowDevCached.set(true);
                 _allowDebug.set(GCS.allowDebug);
             }
-#if MAIN
+#if RELEASE || BETA || ALPHA
             if (!RDInput.asyncKeyboard.isActive && !RDInput.asyncKeyboardLeft.isActive && !RDInput.asyncKeyboardRight.isActive)
             {
                 UnInput();
                 return;
             }
-#elif R136_2_9_8
+#elif ALPHA_2_9_8_R136
             if (!RDInput.asyncKeyboardMouseInput.isActive)
             {
                 UnInput();
@@ -127,7 +124,7 @@ namespace AsyncInput
             }
             if (!Application.isFocused)
             {
-                Array.Clear(AsyncInputData.keyMask, 0, AsyncInputData.keyMask.Length);
+                System.Array.Clear(AsyncInputData.keyMask, 0, AsyncInputData.keyMask.Length);
                 AsyncInputData.keyQueue.Clear();
                 ProcessKeyInputs(@this);
                 return;
@@ -152,7 +149,7 @@ namespace AsyncInput
                 }
             }
         }
-#if MAIN
+#if RELEASE || BETA || ALPHA
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void ProcessKeyInputs(scrController @this)
         {
@@ -261,7 +258,7 @@ namespace AsyncInput
                 scrPlayer.overrideCamyToPos = topos;
             }
         }
-#elif R136_2_9_8
+#elif ALPHA_2_9_8_R136
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void ProcessKeyInputs(scrController @this)
         {

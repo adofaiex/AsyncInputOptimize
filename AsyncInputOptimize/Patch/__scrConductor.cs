@@ -1,7 +1,9 @@
-﻿using HarmonyLib;
+﻿using AsyncInputOptimize.Logic;
+using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
+using UnityEngine;
 
 namespace AsyncInputOptimize.Patch
 {
@@ -12,10 +14,10 @@ namespace AsyncInputOptimize.Patch
         [HarmonyTranspiler]
         public static IEnumerable<CodeInstruction> Transpiler_Start(IEnumerable<CodeInstruction> instructions)
         {
-            yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(AsyncInputHook), nameof(AsyncInputHook.ResetTime)));
+            yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(PatchMidLayer), nameof(PatchMidLayer.StartOrPlay)));
             foreach (CodeInstruction ci in instructions)
             {
-                yield return ci;
+                yield return SafeDSPTime.ReplaceDSPTime(ci);
             }
             yield break;
         }
@@ -23,10 +25,10 @@ namespace AsyncInputOptimize.Patch
         [HarmonyTranspiler]
         public static IEnumerable<CodeInstruction> Transpiler_Rewind(IEnumerable<CodeInstruction> instructions)
         {
-            yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(AsyncInputHook), nameof(AsyncInputHook.ResetTime)));
+            yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(PatchMidLayer), nameof(PatchMidLayer.StartOrPlay)));
             foreach (CodeInstruction ci in instructions)
             {
-                yield return ci;
+                yield return SafeDSPTime.ReplaceDSPTime(ci);
             }
             yield break;
         }
@@ -35,7 +37,7 @@ namespace AsyncInputOptimize.Patch
         public static IEnumerable<CodeInstruction> Transpiler_Update(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
             yield return new CodeInstruction(OpCodes.Ldarg_0);
-            yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(AsyncInputHook), nameof(AsyncInputHook.ConductorUpdate)));
+            yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(PatchMidLayer), nameof(PatchMidLayer.ConductorUpdate)));
 
             bool skip = true;
             foreach (CodeInstruction ci in instructions)
@@ -49,7 +51,7 @@ namespace AsyncInputOptimize.Patch
                 {
                     continue;
                 }
-                yield return ci;
+                yield return SafeDSPTime.ReplaceDSPTime(ci);
             }
             yield break;
         }

@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Beta|Win32">
+      <Configuration>Beta</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Main|Win32">
       <Configuration>Main</Configuration>
       <Platform>Win32</Platform>
@@ -110,10 +114,14 @@
     </Bscmake>
     <PostBuildEvent>
       <Command>cd $(TargetDir)
-xcopy /Y "$(TargetName).pdb" "..\..\..\..\__running\Mods\AsyncInputOptimize"
-xcopy /Y "$(TargetName).dll" "..\..\..\..\__running\Mods\AsyncInputOptimize"
-xcopy /Y "$(TargetName).pdb" "..\..\..\..\__running_136\Mods\AsyncInputOptimize"
-xcopy /Y "$(TargetName).dll" "..\..\..\..\__running_136\Mods\AsyncInputOptimize"</Command>
+xcopy /Y /Q /H "$(TargetName).pdb" "..\..\..\..\__running\alpha\Mods\AsyncInputOptimize"
+xcopy /Y /Q /H "$(TargetName).dll" "..\..\..\..\__running\alpha\Mods\AsyncInputOptimize"
+xcopy /Y /Q /H "$(TargetName).pdb" "..\..\..\..\__running\alpha_2.9.8_r136\Mods\AsyncInputOptimize"
+xcopy /Y /Q /H "$(TargetName).dll" "..\..\..\..\__running\alpha_2.9.8_r136\Mods\AsyncInputOptimize"
+xcopy /Y /Q /H "$(TargetName).pdb" "..\..\..\..\__running\beta\Mods\AsyncInputOptimize"
+xcopy /Y /Q /H "$(TargetName).dll" "..\..\..\..\__running\beta\Mods\AsyncInputOptimize"
+xcopy /Y /Q /H "$(TargetName).pdb" "..\..\..\..\__running\release\Mods\AsyncInputOptimize"
+xcopy /Y /Q /H "$(TargetName).dll" "..\..\..\..\__running\release\Mods\AsyncInputOptimize"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

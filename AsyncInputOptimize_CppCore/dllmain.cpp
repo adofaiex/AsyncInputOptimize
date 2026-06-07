@@ -22,35 +22,6 @@ extern "C"
             GetSystemTimePreciseAsFileTime(reinterpret_cast<FILETIME*>(&t));
             return t;
         }
-        __declspec(dllexport) System::Int64 LowSleep(System::Int64 tick)
-        {
-            System::Int64 i64a = GetPreciseTimeAsFileTime();
-            WaitSleep(tick, TRUE);
-            System::Int64 i64b = GetPreciseTimeAsFileTime();
-            return tick - (i64b - i64a);
-        }
-        __declspec(dllexport) System::Int64 HighSleep(System::Int64 tick)
-        {
-            System::Int64 i64a = GetPreciseTimeAsFileTime();
-            if (tick > 0)
-            {
-                if (tick > SLEEPMIX_OFFSET1)
-                    Sleep((tick - SLEEPMIX_OFFSET1) / 10000);
-                System::Int64 due = GetPreciseTimeAsFileTime();
-                System::Int64 last = (due - i64a);
-                if (tick - last > (SLEEPMIX_OFFSET2 << 1))
-                    WaitSleep(tick - last - SLEEPMIX_OFFSET2 - SLEEPMIX_OFFSET2, TRUE);
-            }
-            System::Int64 i64b;
-            System::Int64 delta = 0;
-            do
-            {
-                SwitchToThread();
-                i64b = GetPreciseTimeAsFileTime();
-                delta = (i64b - i64a);
-            } while (tick > delta + 2);
-            return tick - delta;
-        }
     }
 }
 

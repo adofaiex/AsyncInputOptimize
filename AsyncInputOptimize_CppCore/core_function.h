@@ -29,18 +29,4 @@ extern "C"
         return (i64 - 126227808000000000ULL);
 #endif
     }
-    sio void WaitSleep(System::Int64 tick, BOOL high_resoluition)
-    {
-        HANDLE hTimer = CreateWaitableTimerEx(NULL, NULL, high_resoluition << 1, SYNCHRONIZE | TIMER_MODIFY_STATE);
-        if (hTimer)
-        {
-            LARGE_INTEGER due = {};
-            due.QuadPart = -tick;
-            if (SetWaitableTimerEx(hTimer, &due, 0, NULL, NULL, NULL, 0))
-            {
-                WaitForSingleObject(hTimer, INFINITE);
-            }
-            CloseHandle(hTimer);
-        }
-    }
 }

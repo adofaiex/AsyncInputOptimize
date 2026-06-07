@@ -34,14 +34,6 @@
 # else
 #  define MT_QTIME 0
 # endif
-constexpr int MOUSE_START = 1;
-constexpr int MOUSE_END = 7;
-constexpr int KEYBD_START = 7;
-constexpr int KEYBD_END = 256;
-constexpr int INPUT_START = 1;
-constexpr int INPUT_END = 256;
-constexpr int SLEEPMIX_OFFSET1 = 156250;
-constexpr int SLEEPMIX_OFFSET2 = 6000;
 
 #endif
 

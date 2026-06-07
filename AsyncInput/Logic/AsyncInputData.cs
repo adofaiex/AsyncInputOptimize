@@ -2,7 +2,7 @@
 using ModsTagLib.Win32;
 using System.Collections.Generic;
 
-namespace AsyncInput
+namespace AsyncInput.Logic
 {
     public static class AsyncInputData
     {
@@ -12,6 +12,8 @@ namespace AsyncInput
         public static ulong prevFrameTick;
         public static ulong offsetTick;
         public static ulong offsetTick_REAL;
+        public static ulong[] offsetTicks = new ulong[30];
+        public static int offsetTicksIndex;
         public static double dspTime;
 
         public static readonly SinglePCCircularQueue_Const<AsyncKeyEvent> keyQueue = new(16);

@@ -1,13 +1,4 @@
-﻿/*
- * Copy in Cover Mod
- * Assembly: Cover.dll
- * NameSpace: Cover.Tweaks.Patches
- * Categoty: StaticClass
- * Name: __scrConductor
- * Flag: public auto ansi abstract sealed beforefieldinit flag(200000)
- * Extends: [mscorlib]System.Object
- */
-using HarmonyLib;
+﻿using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 
@@ -24,7 +15,7 @@ namespace AsyncInputOptimize.Patch
             {
                 yield return ci;
             }
-            yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(AsyncInputHook), nameof(AsyncInputHook.ResetTime)));
+            yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(PatchMidLayer), nameof(PatchMidLayer.Reset)));
             yield break;
         }
     }

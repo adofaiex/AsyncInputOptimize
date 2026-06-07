@@ -15,10 +15,6 @@ namespace AsyncInputOptimize
         }
 
         [DllImport("AsyncInputOptimize_CppCore.dll"), SuppressUnmanagedCodeSecurity]
-        public static extern long HighSleep(long value);
-        [DllImport("AsyncInputOptimize_CppCore.dll"), SuppressUnmanagedCodeSecurity]
-        public static extern long LowSleep(long value);
-        [DllImport("AsyncInputOptimize_CppCore.dll"), SuppressUnmanagedCodeSecurity]
         public static extern long GetSystemTick();
         [DllImport("AsyncInputOptimize_CppCore.dll"), SuppressUnmanagedCodeSecurity]
         public static extern void GOGOGO_GO_TO_CRASH______________();
