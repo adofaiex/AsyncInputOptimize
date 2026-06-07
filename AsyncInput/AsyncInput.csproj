@@ -9,7 +9,7 @@
 		<RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
 		<PlatformTarget>x64</PlatformTarget>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-		<Configurations>Alpha_2_9_8_R136;Release;Alpha;Beta</Configurations>
+		<Configurations>Alpha;Alpha_2_9_8_R136;Beta;Release</Configurations>
 		<Platforms>x64</Platforms>
 		<DebugType>none</DebugType>
 		<IsPublishable>False</IsPublishable>
@@ -78,16 +78,16 @@
 		</Reference>
 	</ItemGroup>
 	<Target Name="CopyModFilesAfterBuild" AfterTargets="Build">
-		<Exec Condition="'$(Configuration)'=='Alpha'" Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running\alpha\Mods\AsyncInput\&quot;" />
+		<Exec Condition="'$(Configuration)'=='Alpha'" Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running\alpha\Mods\$(MSBuildProjectName)\&quot;" />
 		<Exec Condition="'$(Configuration)'=='Alpha'" Command="xcopy /Y &quot;$(SolutionDir)..\..\__global\ModsTagLib\__result\ModsTagLib.Unity&quot; &quot;$(SolutionDir)..\__running\alpha\Mods\ModsTagLib.Unity\&quot;" />
-		
-		<Exec Condition="'$(Configuration)'=='Alpha_2_9_8_R136'" Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running\alpha_2.9.8_r136\Mods\AsyncInput\&quot;" />
+
+		<Exec Condition="'$(Configuration)'=='Alpha_2_9_8_R136'" Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running\alpha_2.9.8_r136\Mods\$(MSBuildProjectName)\&quot;" />
 		<Exec Condition="'$(Configuration)'=='Alpha_2_9_8_R136'" Command="xcopy /Y &quot;$(SolutionDir)..\..\__global\ModsTagLib\__result\ModsTagLib.Unity&quot; &quot;$(SolutionDir)..\__running\alpha_2.9.8_r136\Mods\ModsTagLib.Unity\&quot;" />
-		
-		<Exec Condition="'$(Configuration)'=='Beta'" Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running\beta\Mods\AsyncInput\&quot;" />
+
+		<Exec Condition="'$(Configuration)'=='Beta'" Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running\beta\Mods\$(MSBuildProjectName)\&quot;" />
 		<Exec Condition="'$(Configuration)'=='Beta'" Command="xcopy /Y &quot;$(SolutionDir)..\..\__global\ModsTagLib\__result\ModsTagLib.Unity&quot; &quot;$(SolutionDir)..\__running\beta\Mods\ModsTagLib.Unity\&quot;" />
-		
-		<Exec Condition="'$(Configuration)'=='Release'" Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running\release\Mods\AsyncInput\&quot;" />
+
+		<Exec Condition="'$(Configuration)'=='Release'" Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running\release\Mods\$(MSBuildProjectName)\&quot;" />
 		<Exec Condition="'$(Configuration)'=='Release'" Command="xcopy /Y &quot;$(SolutionDir)..\..\__global\ModsTagLib\__result\ModsTagLib.Unity&quot; &quot;$(SolutionDir)..\__running\release\Mods\ModsTagLib.Unity\&quot;" />
 
 	</Target>
