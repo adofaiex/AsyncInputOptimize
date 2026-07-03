@@ -1,0 +1,10 @@
+{
+  "Id": "AsyncInputOptimize",
+  "DisplayName": "Async Input Optimize",
+  "Author": "ModsTag",
+  "Version": "1.4.2",
+  "ManagerVersion": "0.30.0.0",
+  "AssemblyName": "AsyncInputOptimize.dll",
+  "EntryMethod": "AsyncInputOptimize.EntryPoint.Setup",
+  "LoadAfter": [ "ModsTagLib.Unity" ]
+}

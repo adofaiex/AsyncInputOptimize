@@ -37,7 +37,7 @@ namespace AsyncInput.SemiADOToolsLib
         public static readonly RMAction<scrPlayer, ulong?> HitHoldFloorsIfStartedAtHold = MethodAct<scrPlayer, ulong?>(@this.GetMethod(nameof(HitHoldFloorsIfStartedAtHold), AccessTools.all));
         public static readonly RMAction<scrPlayer, ulong?> CheckPreHoldFail = MethodAct<scrPlayer, ulong?>(@this.GetMethod(nameof(CheckPreHoldFail), AccessTools.all));
         public static readonly RMAction<scrPlayer, ulong?> UpdateHoldKeys = MethodAct<scrPlayer, ulong?>(@this.GetMethod(nameof(UpdateHoldKeys), AccessTools.all));
-#elif ALPHA_2_9_8_R136
+#elif ALPHA_2_9_8_R136 || RELEASE_2_5_0_R110
         public static readonly RFReference<bool, scrController> __nextTileIsHoldCached = TryFieldRef<bool, scrController>(nameof(__nextTileIsHoldCached));
         public static readonly RFReference<bool, scrController> validInputWasReleasedThisFrame = TryFieldRef<bool, scrController>(nameof(validInputWasReleasedThisFrame));
         public static readonly RFReference<Vector3, scrController> cachedCamyToPos = TryFieldRef<Vector3, scrController>(nameof(cachedCamyToPos));

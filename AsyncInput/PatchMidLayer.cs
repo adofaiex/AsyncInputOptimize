@@ -5,18 +5,25 @@ namespace AsyncInput
 {
     public static class PatchMidLayer
     {
+        public static bool calibration;
+
+        public static void Calibration(bool state)
+        {
+            calibration = state;
+        }
         public static void Reset()
         {
             AsyncInputHook.ResetTime();
-        }
-        public static void UpdateInput(scrController @this)
-        {
-            AsyncInputHook.UpdateInput(@this);
+            SongsHook.ResetTime();
         }
         public static void StartOrPlay()
         {
             AsyncInputHook.ResetTime();
             SongsHook.ResetTime();
+        }
+        public static void UpdateInput(scrController @this)
+        {
+            AsyncInputHook.UpdateInput(@this);
         }
         public static void CountdownUpdate(scrCountdown @this)
         {
@@ -24,17 +31,26 @@ namespace AsyncInput
         }
         public static void ConductorUpdate(scrConductor @this)
         {
+#if RELEASE_2_5_0_R110
+
+#elif ALPHA_2_9_8_R136
             if (scrConductor.isAudioOutputDeviceChanged)
             {
                 scrController.CheckForAudioOutputChange();
                 scrConductor.isAudioOutputDeviceChanged = false;
             }
-#if RELEASE || BETA || ALPHA
-            PlatformHelper.instance.Update();
-#elif ALPHA_2_9_8_R136
             PlatformHelper.Instance.Update();
+#else
+            if (scrConductor.isAudioOutputDeviceChanged)
+            {
+                scrController.CheckForAudioOutputChange();
+                scrConductor.isAudioOutputDeviceChanged = false;
+            }
+            PlatformHelper.instance.Update();
 #endif
             AsyncInputHook.ConductorUpdate(@this);
+            if (calibration)
+                return;
             SongsHook.ConductorUpdate(@this);
         }
     }

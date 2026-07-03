@@ -1,0 +1,11 @@
+{
+  "Id": "AsyncInput",
+  "DisplayName": "Async Input",
+  "Author": "ModsTag",
+  "Version": "1.0.0",
+  "ManagerVersion": "0.30.0.0",
+  "AssemblyName": "Cover.dll",
+  "EntryMethod": "Cover.Starter.__Bootstrap",
+  "LoadBefore": [ "Overlayer" ],
+  "LoadAfter": [ "AdofaiTweaks", "ModsTagLib.Unity" ]
+}

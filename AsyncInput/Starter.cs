@@ -8,10 +8,12 @@ namespace AsyncInput
 {
     public sealed class Starter : ModsTagLib.Unity.Starter
     {
-        internal Starter(UnityModManager.ModEntry me) : base(me)
+        internal Starter(UnityModManager.ModEntry me) : base(me.Path, me.Info.Id)
         {
+            modEntry = me;
         }
 
+        public static UnityModManager.ModEntry modEntry;
         public static DynamicPatch dmpch;
         public static Starter instance;
         private static int id = -1;
@@ -27,9 +29,9 @@ namespace AsyncInput
         }
         protected override void EnabledMod()
         {
-            log.AllowDebug = true;
-            log.OptimizeDataType = true;
-            log.WriteParams = true;
+            log.allowDebug = true;
+            log.optimizeDataType = true;
+            log.writeParams = true;
             log.MethodType = LogMethod.All;
             bool active = AsyncInputManager.isActive;
             if (active)
@@ -62,13 +64,18 @@ namespace AsyncInput
         protected override void Patch()
         {
         }
-        protected override void TUpdate(double tick)
+        protected override void TUpdate()
         {
             if (id == -1)
                 id = InputManager.AddHook(AsyncInputHook.Hook);
         }
-        protected override void ExceptionReload(Exception e, ExceptionIn e_in)
+        protected override void ExceptionReload(Exception e, MethodType e_in)
         {
+        }
+
+        protected override object CustomEvent(ModsTagLib.Unity.Starter target, long id)
+        {
+            throw new NotImplementedException();
         }
     }
 }

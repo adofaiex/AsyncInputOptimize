@@ -67,7 +67,6 @@ namespace AsyncInputOptimize
             me.OnGUI = GUI;
             cover_is_installer = FindMod("Cover", "Cover.dll");
             mtlib_is_installer = FindMod("ModsTagLib.Unity", "ModsTagLib.__Bootstrap.dll");
-            CppBrige.Init(me);
         }
         public static bool Toggle(ModEntry me, bool a)
         {
@@ -103,23 +102,9 @@ namespace AsyncInputOptimize
             GUILayout.Label("AID RealOffsetTick");
             GUILayout.Label("AID OffsetTick");
             GUILayout.Label("    Delta");
-            GUILayout.Label("");
-            GUILayout.Label("Song1 RealOffsetTick");
-            GUILayout.Label("      OffsetTick");
-            GUILayout.Label("      Delta");
-            GUILayout.Label("Song2 RealOffsetTick");
-            GUILayout.Label("      OffsetTick");
-            GUILayout.Label("      Delta");
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical(new GUIStyle(GUIStyle.none) { normal = gss, hover = gss, focused = gss, active = gss, onNormal = gss, onHover = gss, onFocused = gss, onActive = gss, border = new RectOffset(4, 4, 4, 4) });
-            GUILayout.Label("");
-            GUILayout.Label("");
-            GUILayout.Label("");
-            GUILayout.Label("");
-            GUILayout.Label("");
-            GUILayout.Label("");
-            GUILayout.Label("");
             GUILayout.Label("");
             GUILayout.Label("");
             GUILayout.Label("");
@@ -141,10 +126,6 @@ namespace AsyncInputOptimize
             int Audio_SimpleRate = AudioSettings.GetConfiguration().sampleRate;
             long AID_RealOffsetTick = (long)AsyncInputData.offsetTick_REAL;
             long AID_OffsetTick = (long)AsyncInputData.offsetTick;
-            long Song1_RealOffsetTick = (long)SongsData.song1OffsetTick_REAL;
-            long Song1_OffsetTick = (long)SongsData.song1OffsetTick;
-            long Song2_RealOffsetTick = (long)SongsData.song2OffsetTick_REAL;
-            long Song2_OffsetTick = (long)SongsData.song2OffsetTick;
 
             GUILayout.BeginVertical(GUILayout.MinWidth(320));
             GUILayout.Label(DSPTime_Inter.ToString("f12"));
@@ -158,20 +139,9 @@ namespace AsyncInputOptimize
             GUILayout.Label(AID_RealOffsetTick.ToString());
             GUILayout.Label(AID_OffsetTick.ToString());
             GUILayout.Label((AID_RealOffsetTick - AID_OffsetTick).ToString().PadLeft(10));
-            GUILayout.Label("");
-            GUILayout.Label(Song1_RealOffsetTick.ToString());
-            GUILayout.Label(Song1_OffsetTick.ToString());
-            GUILayout.Label((Song1_RealOffsetTick - Song1_OffsetTick).ToString().PadLeft(10));
-            GUILayout.Label(Song2_RealOffsetTick.ToString());
-            GUILayout.Label(Song2_OffsetTick.ToString());
-            GUILayout.Label((Song2_RealOffsetTick - Song2_OffsetTick).ToString().PadLeft(10));
             GUILayout.EndVertical();
 
             GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-            SongsData.debug_multiply = int.Parse(GUILayout.TextField(SongsData.debug_multiply.ToString()));
-            GUILayout.Space(640);
             GUILayout.EndHorizontal();
         }
     }

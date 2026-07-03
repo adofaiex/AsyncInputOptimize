@@ -58,7 +58,7 @@ namespace AsyncInputOptimize
         {
             double dsp_time = AudioSettings.dspTime;
             Volatile.Write(ref at_dsptime, dsp_time);
-            Volatile.Write(ref at_time, CppBrige.GetSystemTick());
+            Volatile.Write(ref at_time, (long)CppBrige.GetSystemTick());
         }
 
         private static void UnityUpdate()
@@ -69,7 +69,7 @@ namespace AsyncInputOptimize
             Volatile.Write(ref ut_multiply, Time.captureFramerate != 0
             ? ((int)(Time.unscaledDeltaTime * 1E7 + 0.1) * 1E-7) / ((int)(Time.captureDeltaTime * 1E7 + 0.1) * 1E-7)
             : ((int)(Time.timeScale * 1E6 + 0.1) * 1E-6));
-            Volatile.Write(ref ut_time, CppBrige.GetSystemTick());
+            Volatile.Write(ref ut_time, (long)CppBrige.GetSystemTick());
         }
         private static double at_dsptime;
         private static long at_time;
@@ -126,7 +126,7 @@ namespace AsyncInputOptimize
                 long ut_time_check = Volatile.Read(ref SafeDSPTime.ut_time);
                 if (at_time != at_time_check || ut_time != ut_time_check)
                     goto RepeatType;
-                long time = CppBrige.GetSystemTick();
+                long time = (long)CppBrige.GetSystemTick();
                 if (ut_time > at_time)
                 {
                     return dsp + ((ut_time - at_time) * lastmultiply + (time - ut_time) * multiply + offset) / 10_000_000.0;
@@ -158,7 +158,7 @@ namespace AsyncInputOptimize
                 long ut_time_check = Volatile.Read(ref SafeDSPTime.ut_time);
                 if (at_time != at_time_check || ut_time != ut_time_check)
                     goto RepeatType;
-                long time = CppBrige.GetSystemTick();
+                long time = (long)CppBrige.GetSystemTick();
                 if (ut_time > at_time)
                 {
                     return (long)(dsp * 10_000_000.0 + (ut_time - at_time) * lastmultiply + (time - ut_time) * multiply + offset);

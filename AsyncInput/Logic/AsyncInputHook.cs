@@ -68,7 +68,7 @@ namespace AsyncInput.Logic
                 AsyncInputManager.offsetTick = AsyncInputData.offsetTick;
                 AsyncInputManager.previousFrameTime = Time.timeAsDouble;
                 AsyncInputManager.offsetTickUpdated = true;
-#if ALPHA_2_9_8_R136
+#if ALPHA_2_9_8_R136 || RELEASE_2_5_0_R110
                 AsyncInputManager.dspTime = AsyncInputData.dspTime;
                 AsyncInputManager.dspTimeSong = dspTimeSong.get(@this);
 #endif
@@ -76,8 +76,10 @@ namespace AsyncInput.Logic
                 if (ADOBase.controller != null && !ADOBase.controller.paused)
                     ADOBase.controller.UpdateInput();
             }
+#if !RELEASE_2_5_0_R110
             @this.prev_dspTime = @this.dspTime;
             @this.prev_unityDspTime = dspTime;
+#endif
         }
         public static void Hook(InputManager.FastPackage package)
         {
@@ -95,19 +97,21 @@ namespace AsyncInput.Logic
         }
         public static unsafe void UpdateInput(scrController @this)
         {
+#if !RELEASE_2_5_0_R110
             if (!_allowDevCached.get())
             {
                 _allowDevCached.set(true);
                 _allowDebug.set(GCS.allowDebug);
             }
-#if RELEASE || BETA || ALPHA
-            if (!RDInput.asyncKeyboard.isActive && !RDInput.asyncKeyboardLeft.isActive && !RDInput.asyncKeyboardRight.isActive)
+#endif
+#if ALPHA_2_9_8_R136 || RELEASE_2_5_0_R110
+            if (!RDInput.asyncKeyboardMouseInput.isActive)
             {
                 UnInput();
                 return;
             }
-#elif ALPHA_2_9_8_R136
-            if (!RDInput.asyncKeyboardMouseInput.isActive)
+#else
+            if (!RDInput.asyncKeyboard.isActive && !RDInput.asyncKeyboardLeft.isActive && !RDInput.asyncKeyboardRight.isActive)
             {
                 UnInput();
                 return;
@@ -149,7 +153,107 @@ namespace AsyncInput.Logic
                 }
             }
         }
-#if RELEASE || BETA || ALPHA
+#if ALPHA_2_9_8_R136 || RELEASE_2_5_0_R110
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void ProcessKeyInputs(scrController @this)
+        {
+            if ((@this.state | (States)@this.stateMachine.GetState()) == States.PlayerControl)
+            {
+                SimulatedPlayerUpdate(@this, AsyncInputData.currFrameTick);
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void ProcessKeyInputs(scrController @this, ulong value, bool state)
+        {
+            if ((@this.state | (States)@this.stateMachine.GetState()) == States.PlayerControl && @this.currFloor != null && !@this.isCutscene)
+            {
+                Fast_SimulatedPlayerUpdate(@this, value, state);
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void WhileFloorNotChange(scrController @this, delegate*<scrController, ulong?, void> ptr, ulong? targetTick)
+        {
+            int num = -1;
+            while (num != @this.currFloor.seqID)
+            {
+                num = @this.currFloor.seqID;
+                ptr(@this, targetTick);
+            }
+        }
+        public static unsafe void SimulatedPlayerUpdate(scrController @this, ulong targetTick)
+        {
+            if (@this.currFloor == null || @this.isCutscene)
+            {
+                return;
+            }
+
+            __nextTileIsHoldCached.set(@this, false);
+            validInputWasReleasedThisFrame.set(@this, @this.ValidInputWasReleased());
+            cachedCamyToPos.set(@this, @this.camy.topos);
+            if (@this.currFloor.nextfloor is not null)
+            {
+                scrFloor nextfloor = @this.currFloor.nextfloor;
+                while (nextfloor.midSpin && (bool)nextfloor.nextfloor)
+                {
+                    nextfloor = nextfloor.nextfloor;
+                }
+                __nextTileIsHoldCached.set(@this, nextfloor.holdLength > -1);
+            }
+
+            WhileFloorNotChange(@this, CheckPostHoldFail.method, targetTick);
+            WhileFloorNotChange(@this, OttoHoldHit.method, targetTick);
+            UpdateHoldBehavior.method(@this, targetTick);
+            WhileFloorNotChange(@this, HitHoldFloorsIfStartedAtHold.method, targetTick);
+            WhileFloorNotChange(@this, CheckPreHoldFail.method, targetTick);
+#if !RELEASE_2_5_0_R110
+            if (RDInput.GetMain(ButtonState.WentUp) > 0)
+            {
+                @this.HitInputEvent(isAuto: false, InputEventState.Up);
+            }
+#endif
+            Vector3 topos = @this.camy.topos;
+            if (cachedCamyToPos.get(@this) != topos)
+            {
+                scrController.shouldReplaceCamyToPos = true;
+                scrController.overrideCamyToPos = topos;
+            }
+        }
+        public static unsafe void Fast_SimulatedPlayerUpdate(scrController @this, ulong targetTick, bool state)
+        {
+            __nextTileIsHoldCached.set(@this, false);
+            validInputWasReleasedThisFrame.set(@this, !state);
+            cachedCamyToPos.set(@this, @this.camy.topos);
+            if (@this.currFloor.nextfloor is not null)
+            {
+                scrFloor nextfloor = @this.currFloor.nextfloor;
+                while (nextfloor.midSpin && (bool)nextfloor.nextfloor)
+                {
+                    nextfloor = nextfloor.nextfloor;
+                }
+                __nextTileIsHoldCached.set(@this, nextfloor.holdLength > -1);
+            }
+
+            CheckPostHoldFail.method(@this, targetTick);
+            if (state)
+                @this.keyTimes.Add(Time.timeAsDouble);
+            UpdateHoldBehavior.method(@this, targetTick);
+            HitHoldFloorsIfStartedAtHold.method(@this, targetTick);
+            CheckPreHoldFail.method(@this, targetTick);
+            UpdateHoldKeys.method(@this, targetTick);
+#if !RELEASE_2_5_0_R110
+            if (RDInput.GetMain(ButtonState.WentUp) > 0)
+            {
+                @this.HitInputEvent(isAuto: false, InputEventState.Up);
+            }
+#endif
+            Vector3 topos = @this.camy.topos;
+            if (cachedCamyToPos.get(@this) != topos)
+            {
+                scrController.shouldReplaceCamyToPos = true;
+                scrController.overrideCamyToPos = topos;
+            }
+        }
+#else
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void ProcessKeyInputs(scrController @this)
         {
@@ -251,112 +355,11 @@ namespace AsyncInput.Logic
             {
                 @this.HitInputEvent(isAuto: false, InputEventState.Up);
             }
-            Vector2 topos = ADOBase.controller.camy.topos;
+            Vector2 topos = ctrl.camy.topos;
             if (cachedCamyToPos.get(@this) != topos)
             {
                 scrPlayer.shouldReplaceCamyToPos = true;
                 scrPlayer.overrideCamyToPos = topos;
-            }
-        }
-#elif ALPHA_2_9_8_R136
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe void ProcessKeyInputs(scrController @this)
-        {
-            if ((@this.state | (States)@this.stateMachine.GetState()) == States.PlayerControl)
-            {
-                SimulatedPlayerUpdate(@this, AsyncInputData.currFrameTick);
-            }
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe void ProcessKeyInputs(scrController @this, ulong value, bool state)
-        {
-            if ((@this.state | (States)@this.stateMachine.GetState()) == States.PlayerControl)
-            {
-                Fast_SimulatedPlayerUpdate(@this, value, state);
-            }
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe void WhileFloorNotChange(scrController @this, delegate*<scrController, ulong?, void> ptr, ulong? targetTick)
-        {
-            int num = -1;
-            while (num != @this.currFloor.seqID)
-            {
-                num = @this.currFloor.seqID;
-                ptr(@this, targetTick);
-            }
-        }
-        public static unsafe void SimulatedPlayerUpdate(scrController @this, ulong targetTick)
-        {
-            if (@this.currFloor == null || @this.isCutscene)
-            {
-                return;
-            }
-
-            __nextTileIsHoldCached.set(@this, false);
-            validInputWasReleasedThisFrame.set(@this, @this.ValidInputWasReleased());
-            cachedCamyToPos.set(@this, @this.camy.topos);
-            if (@this.currFloor.nextfloor is not null)
-            {
-                scrFloor nextfloor = @this.currFloor.nextfloor;
-                while (nextfloor.midSpin && (bool)nextfloor.nextfloor)
-                {
-                    nextfloor = nextfloor.nextfloor;
-                }
-                __nextTileIsHoldCached.set(@this, nextfloor.holdLength > -1);
-            }
-
-            WhileFloorNotChange(@this, CheckPostHoldFail.method, targetTick);
-            WhileFloorNotChange(@this, OttoHoldHit.method, targetTick);
-            UpdateHoldBehavior.method(@this, targetTick);
-            WhileFloorNotChange(@this, HitHoldFloorsIfStartedAtHold.method, targetTick);
-            WhileFloorNotChange(@this, CheckPreHoldFail.method, targetTick);
-            if (RDInput.GetMain(ButtonState.WentUp) > 0)
-            {
-                @this.HitInputEvent(isAuto: false, InputEventState.Up);
-            }
-            Vector3 topos = ADOBase.controller.camy.topos;
-            if (cachedCamyToPos.get(@this) != topos)
-            {
-                scrController.shouldReplaceCamyToPos = true;
-                scrController.overrideCamyToPos = topos;
-            }
-        }
-        public static unsafe void Fast_SimulatedPlayerUpdate(scrController @this, ulong targetTick, bool state)
-        {
-            if (@this.currFloor == null || @this.isCutscene)
-            {
-                return;
-            }
-
-            __nextTileIsHoldCached.set(@this, false);
-            validInputWasReleasedThisFrame.set(@this, !state);
-            cachedCamyToPos.set(@this, @this.camy.topos);
-            if (@this.currFloor.nextfloor is not null)
-            {
-                scrFloor nextfloor = @this.currFloor.nextfloor;
-                while (nextfloor.midSpin && (bool)nextfloor.nextfloor)
-                {
-                    nextfloor = nextfloor.nextfloor;
-                }
-                __nextTileIsHoldCached.set(@this, nextfloor.holdLength > -1);
-            }
-
-            CheckPostHoldFail.method(@this, targetTick);
-            if (state)
-                @this.keyTimes.Add(Time.timeAsDouble);
-            UpdateHoldBehavior.method(@this, targetTick);
-            HitHoldFloorsIfStartedAtHold.method(@this, targetTick);
-            CheckPreHoldFail.method(@this, targetTick);
-            UpdateHoldKeys.method(@this, targetTick);
-            if (RDInput.GetMain(ButtonState.WentUp) > 0)
-            {
-                @this.HitInputEvent(isAuto: false, InputEventState.Up);
-            }
-            Vector3 topos = ADOBase.controller.camy.topos;
-            if (cachedCamyToPos.get(@this) != topos)
-            {
-                scrController.shouldReplaceCamyToPos = true;
-                scrController.overrideCamyToPos = topos;
             }
         }
 #endif

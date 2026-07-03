@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
 
@@ -7,17 +8,14 @@ namespace AsyncInputOptimize
     public static class CppBrige
     {
 #if WIN32
-        [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
-        private static extern IntPtr LoadLibrary(string lpFileName);
-        internal static void Init(UnityModManagerNet.UnityModManager.ModEntry me)
+        [DllImport("Kernel32.dll"), SuppressUnmanagedCodeSecurity]
+        public static extern void GetSystemTimePreciseAsFileTime(out ulong lpTime);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ulong GetSystemTick()
         {
-            LoadLibrary($"{me.Path}\\AsyncInputOptimize_CppCore.dll");
+            GetSystemTimePreciseAsFileTime(out var res);
+            return res;
         }
-
-        [DllImport("AsyncInputOptimize_CppCore.dll"), SuppressUnmanagedCodeSecurity]
-        public static extern long GetSystemTick();
-        [DllImport("AsyncInputOptimize_CppCore.dll"), SuppressUnmanagedCodeSecurity]
-        public static extern void GOGOGO_GO_TO_CRASH______________();
 #endif
     }
 }
