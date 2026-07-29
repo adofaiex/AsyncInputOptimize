@@ -71,7 +71,7 @@ namespace AsyncInputOptimize.Logic
                 AsyncInputManager.offsetTick = AsyncInputData.offsetTick;
                 AsyncInputManager.previousFrameTime = Time.timeAsDouble;
                 AsyncInputManager.offsetTickUpdated = true;
-#if Alpha_2_9_8_R136 || RELEASE_2_5_0_R110
+#if ALPHA_2_9_8_R136 || RELEASE_2_5_0_R110
                 AsyncInputManager.dspTime = AsyncInputData.dspTime;
                 AsyncInputManager.dspTimeSong = (double)dspTimeSong.GetValue(@this);
 #endif
