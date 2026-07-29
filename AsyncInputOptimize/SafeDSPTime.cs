@@ -12,20 +12,27 @@ namespace AsyncInputOptimize
         private static SafeDSPTime instane;
         internal static void Init()
         {
+            GameObject obj;
             if (instane != null)
-                return;
-            GameObject obj = new("[AsyncInputOptimize.dll]InterpolationTime");
+            {
+                obj = instane.gameObject;
+                Destroy(instane);
+            }
+            else
+            {
+                obj = new("[AsyncInputOptimize.dll]InterpolationTime");
+            }
             DontDestroyOnLoad(obj);
             instane = obj.AddComponent(typeof(SafeDSPTime)) as SafeDSPTime;
         }
         private void Start()
         {
-            var source = GetComponent<AudioSource>();
-
-            source.clip = AudioClip.Create("Runner", 1, 1, 48000, false); ;
-            source.loop = true;
-            source.volume = 0;
-            source.Play();
+            // var source = GetComponent<AudioSource>();
+            // 
+            // source.clip = AudioClip.Create("Runner", 1, 1, 48000, false);
+            // source.loop = true;
+            // source.volume = 0;
+            // source.Play();
         }
         private void Awake()
         {

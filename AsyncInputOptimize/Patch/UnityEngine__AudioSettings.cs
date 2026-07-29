@@ -1,11 +1,12 @@
 ﻿using HarmonyLib;
+using UnityEngine;
 
 namespace AsyncInputOptimize.Patch
 {
     [HarmonyPatch]
-    public static class __scnSplash
+    public static class UnityEngine__AudioSettings
     {
-        [HarmonyPatch(typeof(scnSplash), "GoToMenu")]
+        [HarmonyPatch(typeof(AudioSettings), "Reset")]
         [HarmonyPostfix]
         public static void Postfix_GoToMenu()
         {
