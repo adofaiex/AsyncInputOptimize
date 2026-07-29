@@ -75,7 +75,8 @@ namespace AsyncInputOptimize
             if (a)
             {
                 harmony.PatchAll();
-                SafeDSPTime.Init();
+                if (UI.Instance != null)
+                    me.Info.DisplayName = "<color=#ff7f7f>[Restart Game!]</color>Async Input Optimize";
             }
             else
             {

@@ -30,7 +30,6 @@ namespace AsyncInputOptimize
         private void Awake()
         {
             PlayerLoopSystem loop = PlayerLoop.GetCurrentPlayerLoop();
-            // 找到 PreUpdate 阶段
             for (int i = 0; i < loop.subSystemList.Length; i++)
             {
                 PlayerLoopSystem preUpdate = loop.subSystemList[i];
@@ -38,14 +37,12 @@ namespace AsyncInputOptimize
                 {
                     var subSystems = new System.Collections.Generic.List<PlayerLoopSystem>(preUpdate.subSystemList);
 
-                    // 创建你的自定义系统
                     PlayerLoopSystem myEarlySystem = new PlayerLoopSystem
                     {
                         type = typeof(SafeDSPTime),
                         updateDelegate = SafeDSPTime.UnityUpdate
                     };
 
-                    // 插入在 UpdateTime 之后（UpdateTime 通常是 PreUpdate 的第一个子系统）
                     subSystems.Insert(1, myEarlySystem);
                     preUpdate.subSystemList = subSystems.ToArray();
                     loop.subSystemList[i] = preUpdate;
@@ -56,6 +53,7 @@ namespace AsyncInputOptimize
         }
         private void OnAudioFilterRead(float[] data, int channels)
         {
+            // EntryPoint.logger.Log("Update!!");
             double dsp_time = AudioSettings.dspTime;
             Volatile.Write(ref at_dsptime, dsp_time);
             Volatile.Write(ref at_time, (long)CppBrige.GetSystemTick());
@@ -110,7 +108,7 @@ namespace AsyncInputOptimize
                 return Volatile.Read(ref at_dsptime) + Volatile.Read(ref SafeDSPTime.offset) / 10_000_000;
             }
         }
-        public static unsafe double InterpolationDSPTime
+        public static double InterpolationDSPTime
         {
             get
             {
@@ -142,7 +140,7 @@ namespace AsyncInputOptimize
                 return (long)(Volatile.Read(ref at_dsptime) * 10_000_000.0) + Volatile.Read(ref SafeDSPTime.offset);
             }
         }
-        public static unsafe long InterpolationDSPTimeAsFileTime
+        public static long InterpolationDSPTimeAsFileTime
         {
             get
             {

@@ -5,12 +5,6 @@ namespace AsyncInput
 {
     public static class PatchMidLayer
     {
-        public static bool calibration;
-
-        public static void Calibration(bool state)
-        {
-            calibration = state;
-        }
         public static void Reset()
         {
             AsyncInputHook.ResetTime();
@@ -49,8 +43,6 @@ namespace AsyncInput
             PlatformHelper.instance.Update();
 #endif
             AsyncInputHook.ConductorUpdate(@this);
-            if (calibration)
-                return;
             SongsHook.ConductorUpdate(@this);
         }
     }
