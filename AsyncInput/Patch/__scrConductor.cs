@@ -33,6 +33,17 @@ namespace AsyncInput.Patch
             bool skip = true;
             foreach (CodeInstruction ci in instructions)
             {
+#if RELEASE_2_5_0_R110
+                if (ci.opcode == OpCodes.Callvirt && (ci.operand as MethodInfo).Name == "UpdateInput")
+                {
+                    skip = false;
+                    continue;
+                }
+                if (skip)
+                {
+                    continue;
+                }
+#else
                 if (ci.opcode == OpCodes.Stfld && (ci.operand as FieldInfo).Name == "prev_unityDspTime")
                 {
                     skip = false;
@@ -42,6 +53,7 @@ namespace AsyncInput.Patch
                 {
                     continue;
                 }
+#endif
                 yield return SafeDSPTime.ReplaceDSPTime(ci);
             }
             yield break;

@@ -45,7 +45,7 @@ namespace AsyncInput.Logic
                 {
                     AsyncInputData.offsetTicksIndex = 0;
                     SafeDSPTime.AddOffset(delta);
-                    Starter.instance.log.WARN("DSPTime XRUN Error");
+                    Starter.instance.log.WARN("DSPTime XRUN Error: " + delta);
                     goto JMP_RELOAD;
                 }
                 if (AsyncInputData.offsetTicksIndex == 30)
@@ -86,16 +86,16 @@ namespace AsyncInput.Logic
             if (!AsyncInputData.enabled)
                 return;
             AsyncKeyEvent ake = default;
-            ake.time = package.time;
+            ake.time = package.time / 100; // nano time -> filetime
             ake.key = (VirtualKeys)package.vkCode;
             ake.state = package.flags == 1;
             AsyncInputData.keyQueue.Enqueue(ake);
         }
-        public static unsafe void UnInput()
+        public static void UnInput()
         {
             AsyncInputData.keyQueue.Clear();
         }
-        public static unsafe void UpdateInput(scrController @this)
+        public static void UpdateInput(scrController @this)
         {
 #if !RELEASE_2_5_0_R110
             if (!_allowDevCached.get())

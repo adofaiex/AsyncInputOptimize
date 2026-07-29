@@ -44,11 +44,11 @@ namespace AsyncInputOptimize.Logic
                 AsyncInputData.offsetTicks[AsyncInputData.offsetTicksIndex++] = AsyncInputData.offsetTick_REAL;
                 long delta = (long)AsyncInputData.offsetTick_REAL - (long)AsyncInputData.offsetTick;
 
-                if (System.Math.Abs(delta) > audio_precise * 10000000 * 4)
+                if (System.Math.Abs(delta) > audio_precise * 10000000 * 4 && audio_precise != 0)
                 {
                     AsyncInputData.offsetTicksIndex = 0;
                     AsyncInputData.offsetTick += (ulong)delta;
-                    EntryPoint.logger.Warning("DSPTime XRUN Error");
+                    EntryPoint.logger.Warning("DSPTime XRUN Error: " + delta);
                     goto JMP_RELOAD;
                 }
                 if (AsyncInputData.offsetTicksIndex == 30)
