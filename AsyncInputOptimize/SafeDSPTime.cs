@@ -28,6 +28,7 @@ namespace AsyncInputOptimize
             {
                 obj = instane.gameObject;
                 Destroy(instane);
+                Destroy(obj.GetComponent<AudioSource>());
             }
             else
             {
