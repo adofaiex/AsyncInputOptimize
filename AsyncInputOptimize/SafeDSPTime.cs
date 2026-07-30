@@ -10,6 +10,7 @@ namespace AsyncInputOptimize
     public sealed class SafeDSPTime : MonoBehaviour
     {
         private static SafeDSPTime instane;
+        internal static void Init(bool _) => Init();
         internal static void Init()
         {
             GameObject obj;
@@ -22,18 +23,12 @@ namespace AsyncInputOptimize
             {
                 obj = new("[AsyncInputOptimize.dll]InterpolationTime");
             }
+            // EntryPoint.logger.Log("Safe DSP Timer Reload");
             DontDestroyOnLoad(obj);
             instane = obj.AddComponent(typeof(SafeDSPTime)) as SafeDSPTime;
         }
-        private void Start()
-        {
-            // var source = GetComponent<AudioSource>();
-            // 
-            // source.clip = AudioClip.Create("Runner", 1, 1, 48000, false);
-            // source.loop = true;
-            // source.volume = 0;
-            // source.Play();
-        }
+
+        private AudioSource m_source;
         private void Awake()
         {
             PlayerLoopSystem loop = PlayerLoop.GetCurrentPlayerLoop();
@@ -57,6 +52,18 @@ namespace AsyncInputOptimize
                 }
             }
             PlayerLoop.SetPlayerLoop(loop);
+        }
+        private void Update()
+        {
+            if (m_source == null || m_source.clip == null)
+            {
+                m_source = GetComponent<AudioSource>();
+
+                m_source.clip = AudioClip.Create("Runner", 1, 1, 48000, false);
+                m_source.loop = true;
+                m_source.volume = 0;
+                m_source.Play();
+            }
         }
         private void OnAudioFilterRead(float[] data, int channels)
         {

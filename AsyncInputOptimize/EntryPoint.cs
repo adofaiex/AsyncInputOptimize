@@ -74,12 +74,12 @@ namespace AsyncInputOptimize
             mtlib_is_installer = FindMod("ModsTagLib.Unity", "ModsTagLib.__Bootstrap.dll");
             if (a)
             {
+                AudioSettings.OnAudioConfigurationChanged += SafeDSPTime.Init;
                 harmony.PatchAll();
-                if (UI.Instance != null)
-                    me.Info.DisplayName = "<color=#ff7f7f>[Restart Game!]</color>Async Input Optimize";
             }
             else
             {
+                AudioSettings.OnAudioConfigurationChanged -= SafeDSPTime.Init;
                 harmony.UnpatchAll(me.Info.Id);
             }
             return true;
