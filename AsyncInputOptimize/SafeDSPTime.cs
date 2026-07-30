@@ -13,6 +13,16 @@ namespace AsyncInputOptimize
         internal static void Init(bool _) => Init();
         internal static void Init()
         {
+            at_dsptime = 0;
+            at_time = 0;
+            ut_precise = 0;
+            ut_multiply = 0;
+            ut_lastmultiply = 0;
+            ut_time = 0;
+            offset = 0;
+            Thread.MemoryBarrier();
+
+
             GameObject obj;
             if (instane != null)
             {
