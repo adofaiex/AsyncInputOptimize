@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using System;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.LowLevel;
@@ -9,6 +10,15 @@ namespace AsyncInputOptimize
     [RequireComponent(typeof(AudioSource))]
     public sealed class SafeDSPTime : MonoBehaviour
     {
+        static SafeDSPTime()
+        {
+            pls = new PlayerLoopSystem
+            {
+                type = typeof(SafeDSPTime),
+                updateDelegate = SafeDSPTime.UnityUpdate
+            };
+        }
+        private static PlayerLoopSystem pls;
         private static SafeDSPTime instane;
         internal static void Init(bool _) => Init();
         internal static void Init()
@@ -43,25 +53,44 @@ namespace AsyncInputOptimize
         private void Awake()
         {
             PlayerLoopSystem loop = PlayerLoop.GetCurrentPlayerLoop();
+            int time_index = -1;
             for (int i = 0; i < loop.subSystemList.Length; i++)
             {
-                PlayerLoopSystem preUpdate = loop.subSystemList[i];
-                if (preUpdate.type == typeof(TimeUpdate))
+                if (loop.subSystemList[i].type == typeof(TimeUpdate))
                 {
-                    var subSystems = new System.Collections.Generic.List<PlayerLoopSystem>(preUpdate.subSystemList);
-
-                    PlayerLoopSystem myEarlySystem = new PlayerLoopSystem
-                    {
-                        type = typeof(SafeDSPTime),
-                        updateDelegate = SafeDSPTime.UnityUpdate
-                    };
-
-                    subSystems.Insert(1, myEarlySystem);
-                    preUpdate.subSystemList = subSystems.ToArray();
-                    loop.subSystemList[i] = preUpdate;
+                    time_index = i;
                     break;
                 }
             }
+            if (time_index == -1)
+            {
+                EntryPoint.logger.Log("TimeUpdate not found");
+                return;
+            }
+            PlayerLoopSystem time_update = loop.subSystemList[time_index];
+            PlayerLoopSystem[] time_update_sub = new PlayerLoopSystem[time_update.subSystemList.Length + 1];
+            int subtime_index = -1;
+            for (int j = 0; j < time_update.subSystemList.Length; j++)
+            {
+                if (time_update.subSystemList[j].type == typeof(TimeUpdate.WaitForLastPresentationAndUpdateTime))
+                    subtime_index = j;
+                if (time_update.subSystemList[j].type == typeof(SafeDSPTime))
+                    return;
+            }
+            if (subtime_index == -1)
+            {
+                EntryPoint.logger.Log("TimeUpdate.WaitForLastPresentationAndUpdateTime not found");
+                return;
+            }
+
+            for (int j = 0; j < subtime_index; j++)
+                time_update_sub[j] = time_update.subSystemList[j];
+            for (int j = subtime_index; j < time_update.subSystemList.Length; j++)
+                time_update_sub[j + 1] = time_update.subSystemList[j]; 
+
+            time_update_sub[subtime_index] = pls;
+            time_update.subSystemList = time_update_sub;
+            loop.subSystemList[time_index] = time_update;
             PlayerLoop.SetPlayerLoop(loop);
         }
         private void Update()
