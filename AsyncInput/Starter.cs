@@ -1,7 +1,9 @@
 ﻿using AsyncInput.Logic;
 using AsyncInput.Patch;
 using ModsTagLib.Unity;
+using ModsTagLib.Unity.ModLayout;
 using System;
+using UnityEngine;
 using UnityModManagerNet;
 
 namespace AsyncInput
@@ -11,6 +13,7 @@ namespace AsyncInput
         internal Starter(UnityModManager.ModEntry me) : base(me.Path, me.Info.Id)
         {
             modEntry = me;
+            this.AutoWithUmm(me);
         }
 
         public static UnityModManager.ModEntry modEntry;
@@ -25,7 +28,6 @@ namespace AsyncInput
 
         protected override void Awake()
         {
-            SafeDSPTime.Init();
         }
         protected override void EnabledMod()
         {
@@ -38,6 +40,7 @@ namespace AsyncInput
             {
                 AsyncInputManager.ToggleHook(false);
             }
+            AudioSettings.OnAudioConfigurationChanged += SafeDSPTime.Init;
 
             dmpch = new(this, "DynamicPatch");
             dmpch.Add(BasePatch.New(typeof(SkyHook__SkyHookManager), typeof(SkyHook.SkyHookManager), "_StartHook", PatchTypes.Transpiler));
@@ -59,7 +62,64 @@ namespace AsyncInput
         }
         protected override void DisabledMod()
         {
+            AudioSettings.OnAudioConfigurationChanged -= SafeDSPTime.Init;
             dmpch.UnPatch();
+        }
+        protected override void OptionGUI()
+        {
+            GUIL.BeginHorizontal();
+            GUIL.LabelChar("AIData:enabled", 32);
+            GUIL.Label(AsyncInputData.enabled.ToString());
+            GUIL.EndHorizontal();
+            GUIL.BeginHorizontal();
+            GUIL.LabelChar("AIData:currFrameTick", 32);
+            GUIL.Label(AsyncInputData.currFrameTick.ToString());
+            GUIL.EndHorizontal();
+            GUIL.BeginHorizontal();
+            GUIL.LabelChar("AIData:prevFrameTick", 32);
+            GUIL.Label(AsyncInputData.prevFrameTick.ToString());
+            GUIL.EndHorizontal();
+            GUIL.BeginHorizontal();
+            GUIL.LabelChar("AIData:offsetTick", 32);
+            GUIL.Label(AsyncInputData.offsetTick.ToString());
+            GUIL.EndHorizontal();
+            GUIL.BeginHorizontal();
+            GUIL.LabelChar("AIData:offsetTick_REAL", 32);
+            GUIL.Label(AsyncInputData.offsetTick_REAL.ToString());
+            GUIL.EndHorizontal();
+            GUIL.BeginHorizontal();
+            GUIL.LabelChar("AIData:offsetTicks ", 32);
+            GUIL.Label(AsyncInputData.offsetTicks.ToString());
+            GUIL.EndHorizontal();
+            GUIL.BeginHorizontal();
+            GUIL.LabelChar("AIData:offsetTicksIndex", 32);
+            GUIL.Label(AsyncInputData.offsetTicksIndex.ToString());
+            GUIL.EndHorizontal();
+            GUIL.BeginHorizontal();
+            GUIL.LabelChar("AIData:dspTime", 32);
+            GUIL.Label(AsyncInputData.dspTime.ToString());
+            GUIL.EndHorizontal();
+            GUIL.NextLine();
+            GUIL.BeginHorizontal();
+            GUIL.LabelChar("SData:currFrameTick", 32);
+            GUIL.Label(SongsData.currFrameTick.ToString());
+            GUIL.EndHorizontal();
+            GUIL.BeginHorizontal();
+            GUIL.LabelChar("SData:song1OffsetTick", 32);
+            GUIL.Label(SongsData.song1OffsetTick.ToString());
+            GUIL.EndHorizontal();
+            GUIL.BeginHorizontal();
+            GUIL.LabelChar("SData:song2OffsetTick", 32);
+            GUIL.Label(SongsData.song2OffsetTick.ToString());
+            GUIL.EndHorizontal();
+            GUIL.BeginHorizontal();
+            GUIL.LabelChar("SData:song1OffsetTick_REAL", 32);
+            GUIL.Label(SongsData.song1OffsetTick_REAL.ToString());
+            GUIL.EndHorizontal();
+            GUIL.BeginHorizontal();
+            GUIL.LabelChar("SData:song2OffsetTick_REAL", 32);
+            GUIL.Label(SongsData.song2OffsetTick_REAL.ToString());
+            GUIL.EndHorizontal();
         }
         protected override void Patch()
         {

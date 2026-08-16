@@ -1,6 +1,4 @@
-﻿using ADOFAI.Common.Platform;
-using ModsTagLib;
-using ModsTagLib.Unity;
+﻿using ModsTagLib.Unity;
 using ModsTagLib.Win32;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -10,6 +8,8 @@ using static AsyncInput.SemiADOToolsLib.ADORef_scrPlayer;
 #endif
 using static AsyncInput.SemiADOToolsLib.ADORef_scrController;
 using static AsyncInput.SemiADOToolsLib.ADORef_scrConductor;
+using ModsTagLib.Time;
+using Doorstop;
 
 namespace AsyncInput.Logic
 {
@@ -19,7 +19,14 @@ namespace AsyncInput.Logic
         {
             SafeDSPTime.SetOffset(0);
             AsyncInputData.prevFrameTick = AsyncInputData.currFrameTick;
-            AsyncInputData.currFrameTick = (ulong)ModsTagCLib.PreciseFileTime();
+            AsyncInputData.currFrameTick = TimeInstance.PTime.U_Tick();
+            AsyncInputData.offsetTick = AsyncInputData.currFrameTick - (ulong)SafeDSPTime.InterpolationDSPTimeAsFileTime;
+            AsyncInputData.dspTime = SafeDSPTime.InterpolationDSPTime;
+        }
+        public static void PauseTime()
+        {
+            AsyncInputData.prevFrameTick = AsyncInputData.currFrameTick;
+            AsyncInputData.currFrameTick = TimeInstance.PTime.U_Tick();
             AsyncInputData.offsetTick = AsyncInputData.currFrameTick - (ulong)SafeDSPTime.InterpolationDSPTimeAsFileTime;
             AsyncInputData.dspTime = SafeDSPTime.InterpolationDSPTime;
         }
@@ -33,18 +40,23 @@ namespace AsyncInput.Logic
             previousFrameTime.set(@this, time);
             if (AsyncInputManager.isActive)
             {
+                if (scrController.instance?.paused ?? true)
+                {
+                    PauseTime();
+                    return;
+                }
                 double audio_precise = SafeDSPTime.GetAuidoPrecise();
                 AsyncInputData.prevFrameTick = AsyncInputData.currFrameTick;
-                AsyncInputData.currFrameTick = (ulong)ModsTagCLib.PreciseFileTime();
+                AsyncInputData.currFrameTick = TimeInstance.PTime.U_Tick();
                 AsyncInputData.dspTime = (AsyncInputData.currFrameTick - AsyncInputData.offsetTick) / 10000000.0;
                 AsyncInputData.offsetTick_REAL = AsyncInputData.currFrameTick - (ulong)SafeDSPTime.InterpolationDSPTimeAsFileTime;
                 AsyncInputData.offsetTicks[AsyncInputData.offsetTicksIndex++] = AsyncInputData.offsetTick_REAL;
                 long delta = (long)AsyncInputData.offsetTick_REAL - (long)AsyncInputData.offsetTick;
 
-                if (System.Math.Abs(delta) > audio_precise * 10000000 * 4)
+                if (System.Math.Abs(delta) > audio_precise * 10000000 * 4 && audio_precise != 0)
                 {
                     AsyncInputData.offsetTicksIndex = 0;
-                    SafeDSPTime.AddOffset(delta);
+                    AsyncInputData.offsetTick += (ulong)delta;
                     Starter.instance.log.WARN("DSPTime XRUN Error: " + delta);
                     goto JMP_RELOAD;
                 }
@@ -58,7 +70,7 @@ namespace AsyncInput.Logic
                     delta = (long)datas - (long)AsyncInputData.offsetTick;
                     if (System.Math.Abs(delta) > audio_precise * 5000000)
                     {
-                        SafeDSPTime.AddOffset(delta);
+                        AsyncInputData.offsetTick += (ulong)delta;
                         Starter.instance.log.INFO("Offset fix");
                     }
                 }
@@ -70,11 +82,11 @@ namespace AsyncInput.Logic
                 AsyncInputManager.offsetTickUpdated = true;
 #if ALPHA_2_9_8_R136 || RELEASE_2_5_0_R110
                 AsyncInputManager.dspTime = AsyncInputData.dspTime;
-                AsyncInputManager.dspTimeSong = dspTimeSong.get(@this);
+                AsyncInputManager.dspTimeSong = (double)dspTimeSong.GetValue(@this);
 #endif
 
                 if (ADOBase.controller != null && !ADOBase.controller.paused)
-                    ADOBase.controller.UpdateInput();
+                    UpdateInput(ADOBase.controller);
             }
 #if !RELEASE_2_5_0_R110
             @this.prev_dspTime = @this.dspTime;

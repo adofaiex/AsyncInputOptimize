@@ -1,4 +1,5 @@
 ﻿using ModsTagLib;
+using ModsTagLib.Time;
 using UnityEngine;
 
 namespace AsyncInput.Logic
@@ -9,7 +10,7 @@ namespace AsyncInput.Logic
         public static void ResetTime()
         {
             scrConductor cdtr = ADOBase.conductor;
-            SongsData.currFrameTick = (ulong)ModsTagCLib.PreciseFileTime();
+            SongsData.currFrameTick = TimeInstance.PTime.U_Tick();
             if (cdtr == null) return;
             if (cdtr.song != null && cdtr.song.isPlaying)
                 SongsData.song1OffsetTick = SongsData.currFrameTick - GetAudioTime(cdtr.song);
@@ -20,7 +21,7 @@ namespace AsyncInput.Logic
         {
             scrController ctrl = scrController.instance;
             scrConductor cdtr = scrConductor.instance;
-            SongsData.currFrameTick = (ulong)ModsTagCLib.PreciseFileTime();
+            SongsData.currFrameTick = TimeInstance.PTime.U_Tick();
             if (ctrl.goShown || cdtr.fastTakeoff || !(ctrl.state == States.PlayerControl || ctrl.state == States.Countdown || ctrl.state == States.Checkpoint))
                 return;
             if (cdtr.song != null && cdtr.song.isPlaying)
@@ -30,7 +31,7 @@ namespace AsyncInput.Logic
         }
         public static void ConductorUpdate(scrConductor @this)
         {
-            SongsData.currFrameTick = (ulong)ModsTagCLib.PreciseFileTime();
+            SongsData.currFrameTick = TimeInstance.PTime.U_Tick();
 
             if (scrController.instance != null && !scrController.instance.goShown)
             {
@@ -41,7 +42,7 @@ namespace AsyncInput.Logic
             {
                 if ((SongsData.song1OffsetTick | SongsData.song2OffsetTick) == 0)
                     ResetTime();
-                double audio_precise = ModsTagCLib.PreciseFileTime();
+                double audio_precise = SafeDSPTime.GetAuidoPrecise();
                 if (@this.song != null && @this.song.isPlaying)
                 {
                     ulong offset_tick = SongsData.song1OffsetTick_REAL;
