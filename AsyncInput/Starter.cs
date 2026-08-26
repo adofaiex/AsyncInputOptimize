@@ -46,6 +46,9 @@ namespace AsyncInput
                 AsyncInputManager.ToggleHook(false);
             }
             AudioSettings.OnAudioConfigurationChanged += SafeDSPTime.Init;
+#if RELEASE_2_5_0_R110
+            SafeDSPTime.Init();
+#endif
 
             dmpch = new(this, "DynamicPatch");
             dmpch.Add(BasePatch.New(typeof(SkyHook__SkyHookManager), typeof(SkyHook.SkyHookManager), "_StartHook", PatchTypes.Transpiler));

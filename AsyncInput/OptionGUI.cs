@@ -31,6 +31,10 @@ namespace AsyncInput
         }
         private static void MainMenu()
         {
+            if (GUIL.ButtonLarge("如果球不动就用力敲一下我 | if planet pause, click me!"))
+            {
+                SafeDSPTime.Init();
+            }
             using (new FastGUI.SubArea(FastGUI.SubParamter.Default480WEx))
             {
                 using (new Using.Horizontal())

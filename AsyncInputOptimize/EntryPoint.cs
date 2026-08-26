@@ -82,6 +82,9 @@ namespace AsyncInputOptimize
                 AudioSettings.OnAudioConfigurationChanged -= SafeDSPTime.Init;
                 harmony.UnpatchAll(me.Info.Id);
             }
+#if RELEASE_2_5_0_R110
+            SafeDSPTime.Init();
+#endif
             return true;
         }
         public static void Update(ModEntry me, float _)
@@ -89,6 +92,10 @@ namespace AsyncInputOptimize
         }
         public static void GUI(ModEntry me)
         {
+            if (GUILayout.Button("如果球不动就用力敲一下我 | if planet pause, click me!", GUILayout.Height(30f)))
+            {
+                SafeDSPTime.Init();
+            }
             GUILayout.BeginHorizontal();
 
             GUILayout.BeginVertical(GUILayout.MinWidth(160));
