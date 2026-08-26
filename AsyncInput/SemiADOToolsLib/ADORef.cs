@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using ModsTagLib.Reflection;
-using MonsterLove.StateMachine;
 using System;
 using UnityEngine;
 
@@ -22,7 +21,23 @@ namespace AsyncInput.SemiADOToolsLib
         public static readonly RFStatic<bool> _allowDebug = TryFieldStatic<bool>(@this, nameof(_allowDebug));
         public static readonly RPReference<float, scrController> tileSize = TryPropertyRef<float, scrController>(nameof(tileSize));
         public static readonly RPReference<float, scrController> startRadius = TryPropertyRef<float, scrController>(nameof(startRadius));
-#if RELEASE || BETA || ALPHA
+#if ALPHA_2_9_8_R136 || RELEASE_2_5_0_R110
+        public static readonly RFReference<bool, scrController> __nextTileIsHoldCached = TryFieldRef<bool, scrController>(nameof(__nextTileIsHoldCached));
+        public static readonly RFReference<bool, scrController> validInputWasReleasedThisFrame = TryFieldRef<bool, scrController>(nameof(validInputWasReleasedThisFrame));
+        public static readonly RFReference<Vector3, scrController> cachedCamyToPos = TryFieldRef<Vector3, scrController>(nameof(cachedCamyToPos));
+        public static readonly RMAction<scrController, ulong?> CheckPostHoldFail = MethodAct<scrController, ulong?>(@this.GetMethod(nameof(CheckPostHoldFail), AccessTools.all));
+        public static readonly RMAction<scrController, ulong?> OttoHoldHit = MethodAct<scrController, ulong?>(@this.GetMethod(nameof(OttoHoldHit), AccessTools.all));
+        public static readonly RMAction<scrController, ulong?> HitAutoFloors = MethodAct<scrController, ulong?>(@this.GetMethod(nameof(HitAutoFloors), AccessTools.all));
+        public static readonly RMAction<scrController, ulong?> UpdateHoldBehavior = MethodAct<scrController, ulong?>(@this.GetMethod(nameof(UpdateHoldBehavior), AccessTools.all));
+        public static readonly RMAction<scrController, ulong?> HitHoldFloorsIfStartedAtHold = MethodAct<scrController, ulong?>(@this.GetMethod(nameof(HitHoldFloorsIfStartedAtHold), AccessTools.all));
+        public static readonly RMAction<scrController, ulong?> CheckPreHoldFail = MethodAct<scrController, ulong?>(@this.GetMethod(nameof(CheckPreHoldFail), AccessTools.all));
+        public static readonly RMAction<scrController, ulong?> UpdateHoldKeys = MethodAct<scrController, ulong?>(@this.GetMethod(nameof(UpdateHoldKeys), AccessTools.all));
+    }
+    public static class ADORef_scrPlanet
+    {
+        public static readonly Type @this = typeof(scrPlanet);
+        public static readonly RFReference<double, scrPlanet> snappedLastAngle = TryFieldRef<double, scrPlanet>(nameof(snappedLastAngle));
+#else
     }
     public static class ADORef_scrPlayer
     {
@@ -37,17 +52,6 @@ namespace AsyncInput.SemiADOToolsLib
         public static readonly RMAction<scrPlayer, ulong?> HitHoldFloorsIfStartedAtHold = MethodAct<scrPlayer, ulong?>(@this.GetMethod(nameof(HitHoldFloorsIfStartedAtHold), AccessTools.all));
         public static readonly RMAction<scrPlayer, ulong?> CheckPreHoldFail = MethodAct<scrPlayer, ulong?>(@this.GetMethod(nameof(CheckPreHoldFail), AccessTools.all));
         public static readonly RMAction<scrPlayer, ulong?> UpdateHoldKeys = MethodAct<scrPlayer, ulong?>(@this.GetMethod(nameof(UpdateHoldKeys), AccessTools.all));
-#elif ALPHA_2_9_8_R136 || RELEASE_2_5_0_R110
-        public static readonly RFReference<bool, scrController> __nextTileIsHoldCached = TryFieldRef<bool, scrController>(nameof(__nextTileIsHoldCached));
-        public static readonly RFReference<bool, scrController> validInputWasReleasedThisFrame = TryFieldRef<bool, scrController>(nameof(validInputWasReleasedThisFrame));
-        public static readonly RFReference<Vector3, scrController> cachedCamyToPos = TryFieldRef<Vector3, scrController>(nameof(cachedCamyToPos));
-        public static readonly RMAction<scrController, ulong?> CheckPostHoldFail = MethodAct<scrController, ulong?>(@this.GetMethod(nameof(CheckPostHoldFail), AccessTools.all));
-        public static readonly RMAction<scrController, ulong?> OttoHoldHit = MethodAct<scrController, ulong?>(@this.GetMethod(nameof(OttoHoldHit), AccessTools.all));
-        public static readonly RMAction<scrController, ulong?> HitAutoFloors = MethodAct<scrController, ulong?>(@this.GetMethod(nameof(HitAutoFloors), AccessTools.all));
-        public static readonly RMAction<scrController, ulong?> UpdateHoldBehavior = MethodAct<scrController, ulong?>(@this.GetMethod(nameof(UpdateHoldBehavior), AccessTools.all));
-        public static readonly RMAction<scrController, ulong?> HitHoldFloorsIfStartedAtHold = MethodAct<scrController, ulong?>(@this.GetMethod(nameof(HitHoldFloorsIfStartedAtHold), AccessTools.all));
-        public static readonly RMAction<scrController, ulong?> CheckPreHoldFail = MethodAct<scrController, ulong?>(@this.GetMethod(nameof(CheckPreHoldFail), AccessTools.all));
-        public static readonly RMAction<scrController, ulong?> UpdateHoldKeys = MethodAct<scrController, ulong?>(@this.GetMethod(nameof(UpdateHoldKeys), AccessTools.all));
 #endif
     }
 }

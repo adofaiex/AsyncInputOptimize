@@ -1,7 +1,10 @@
-﻿using AsyncInput.Logic;
+﻿using AsyncInput.Core;
+using AsyncInput.Logic;
 using AsyncInput.Patch;
+using ModsTagLib.FileFormat.Json;
 using ModsTagLib.Unity;
 using ModsTagLib.Unity.ModLayout;
+using ModsTagLib.Win32;
 using System;
 using UnityEngine;
 using UnityModManagerNet;
@@ -35,6 +38,8 @@ namespace AsyncInput
             log.optimizeDataType = true;
             log.writeParams = true;
             log.MethodType = LogMethod.All;
+            Config.JObject = JExtend.Load(GetPath(Config.FILE_NAME));
+
             bool active = AsyncInputManager.isActive;
             if (active)
             {
@@ -46,6 +51,10 @@ namespace AsyncInput
             dmpch.Add(BasePatch.New(typeof(SkyHook__SkyHookManager), typeof(SkyHook.SkyHookManager), "_StartHook", PatchTypes.Transpiler));
             dmpch.Add(BasePatch.New(typeof(SkyHook__SkyHookManager), typeof(SkyHook.SkyHookManager), "_StopHook", PatchTypes.Transpiler));
             dmpch.Add(BasePatch.New(typeof(SkyHook__SkyHookManager), typeof(SkyHook.SkyHookManager), "get_isHookActive", PatchTypes.Transpiler));
+            dmpch.Add(BasePatch.New(typeof(__AsyncInputUtils), typeof(AsyncInputUtils), "AdjustAngle", PatchTypes.Transpiler));
+            dmpch.Add(BasePatch.New(typeof(__AsyncInputUtils), typeof(AsyncInputUtils), "GetAngle", PatchTypes.Transpiler));
+            dmpch.Add(BasePatch.New(typeof(__AsyncInputUtils), typeof(AsyncInputUtils), "GetSongPosition", PatchTypes.Transpiler));
+            dmpch.Add(BasePatch.New(typeof(__scrPlanet), typeof(scrPlanet), "AsyncRefreshAngles", PatchTypes.Transpiler));
             dmpch.Add(BasePatch.New(typeof(__scnGame), typeof(scnGame), "Play", PatchTypes.Transpiler));
             dmpch.Add(BasePatch.New(typeof(__scrConductor), typeof(scrConductor), "Start", PatchTypes.Transpiler));
             dmpch.Add(BasePatch.New(typeof(__scrConductor), typeof(scrConductor), "Rewind", PatchTypes.Transpiler));
@@ -65,69 +74,73 @@ namespace AsyncInput
             AudioSettings.OnAudioConfigurationChanged -= SafeDSPTime.Init;
             dmpch.UnPatch();
         }
+        protected override void OpenGUI()
+        {
+            guiInstance.StyleType = GUILInstance.UIType.ColorUI_V1;
+            FastGUI.Load();
+        }
         protected override void OptionGUI()
         {
-            GUIL.BeginHorizontal();
-            GUIL.LabelChar("AIData:enabled", 32);
-            GUIL.Label(AsyncInputData.enabled.ToString());
-            GUIL.EndHorizontal();
-            GUIL.BeginHorizontal();
-            GUIL.LabelChar("AIData:currFrameTick", 32);
-            GUIL.Label(AsyncInputData.currFrameTick.ToString());
-            GUIL.EndHorizontal();
-            GUIL.BeginHorizontal();
-            GUIL.LabelChar("AIData:prevFrameTick", 32);
-            GUIL.Label(AsyncInputData.prevFrameTick.ToString());
-            GUIL.EndHorizontal();
-            GUIL.BeginHorizontal();
-            GUIL.LabelChar("AIData:offsetTick", 32);
-            GUIL.Label(AsyncInputData.offsetTick.ToString());
-            GUIL.EndHorizontal();
-            GUIL.BeginHorizontal();
-            GUIL.LabelChar("AIData:offsetTick_REAL", 32);
-            GUIL.Label(AsyncInputData.offsetTick_REAL.ToString());
-            GUIL.EndHorizontal();
-            GUIL.BeginHorizontal();
-            GUIL.LabelChar("AIData:offsetTicks ", 32);
-            GUIL.Label(AsyncInputData.offsetTicks.ToString());
-            GUIL.EndHorizontal();
-            GUIL.BeginHorizontal();
-            GUIL.LabelChar("AIData:offsetTicksIndex", 32);
-            GUIL.Label(AsyncInputData.offsetTicksIndex.ToString());
-            GUIL.EndHorizontal();
-            GUIL.BeginHorizontal();
-            GUIL.LabelChar("AIData:dspTime", 32);
-            GUIL.Label(AsyncInputData.dspTime.ToString());
-            GUIL.EndHorizontal();
-            GUIL.NextLine();
-            GUIL.BeginHorizontal();
-            GUIL.LabelChar("SData:currFrameTick", 32);
-            GUIL.Label(SongsData.currFrameTick.ToString());
-            GUIL.EndHorizontal();
-            GUIL.BeginHorizontal();
-            GUIL.LabelChar("SData:song1OffsetTick", 32);
-            GUIL.Label(SongsData.song1OffsetTick.ToString());
-            GUIL.EndHorizontal();
-            GUIL.BeginHorizontal();
-            GUIL.LabelChar("SData:song2OffsetTick", 32);
-            GUIL.Label(SongsData.song2OffsetTick.ToString());
-            GUIL.EndHorizontal();
-            GUIL.BeginHorizontal();
-            GUIL.LabelChar("SData:song1OffsetTick_REAL", 32);
-            GUIL.Label(SongsData.song1OffsetTick_REAL.ToString());
-            GUIL.EndHorizontal();
-            GUIL.BeginHorizontal();
-            GUIL.LabelChar("SData:song2OffsetTick_REAL", 32);
-            GUIL.Label(SongsData.song2OffsetTick_REAL.ToString());
-            GUIL.EndHorizontal();
+            AsyncInput.OptionGUI.Main();
         }
         protected override void Patch()
         {
         }
+        protected override void Save()
+        {
+            JExtend.Save(Config.JObject, GetPath(Config.FILE_NAME));
+        }
         protected override void TUpdate()
         {
-            if (id == -1)
-                id = InputManager.AddHook(AsyncInputHook.Hook);
+            if (GlobalVar.ClearAllKeys)
+            {
+                Config.SelectKeys.Clear();
+                GlobalVar.ClearAllKeys = false;
+            }
+        }
+        protected override void TInputUpdate()
+        {
+            InputEventManager.KeyPackage pkg = InputEventManager.LastPackage;
+            if (GlobalVar.SelectKeysMode)
+            {
+                if (pkg.flags == 0)
+                    return;
+                if (pkg.vkCode > (byte)VirtualKeys.VK_NONAME_07)
+                {
+                    if (Config.SelectKeys.Contains((VirtualKeys)pkg.vkCode))
+                    {
+                        Config.SelectKeys.Remove((VirtualKeys)pkg.vkCode);
+                    }
+                    else
+                    {
+                        Config.SelectKeys.Add((VirtualKeys)pkg.vkCode);
+                    }
+                }
+                return;
+            }
+
+            if (!AsyncInputData.enabled)
+                return;
+            bool match = false;
+            for (int i = 0; i < Config.SelectKeys.Count && !match; i++)
+            {
+                match = pkg.vkCode == (byte)Config.SelectKeys[i];
+            }
+
+            if (match && Config.BlackListMode)
+            {
+                return; // invalid input
+            }
+            else if (!match && !Config.BlackListMode)
+            {
+                return; // invalid input
+            }
+
+            AsyncKeyEvent ake = default;
+            ake.time = pkg.time;
+            ake.key = (VirtualKeys)pkg.vkCode;
+            ake.state = pkg.flags != 0;
+            AsyncInputData.keyQueue.Enqueue(ake);
         }
         protected override void ExceptionReload(Exception e, MethodType e_in)
         {

@@ -1,15 +1,15 @@
-﻿using ModsTagLib.Unity;
-using ModsTagLib.Win32;
+﻿using ModsTagLib.Win32;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using ModsTagLib.Time;
 
-#if RELEASE || BETA || ALPHA
+#if ALPHA_2_9_8_R136 || RELEASE_2_5_0_R110
+using static AsyncInput.SemiADOToolsLib.ADORef_scrPlanet;
+#else
 using static AsyncInput.SemiADOToolsLib.ADORef_scrPlayer;
 #endif
 using static AsyncInput.SemiADOToolsLib.ADORef_scrController;
 using static AsyncInput.SemiADOToolsLib.ADORef_scrConductor;
-using ModsTagLib.Time;
-using Doorstop;
 
 namespace AsyncInput.Logic
 {
@@ -18,17 +18,17 @@ namespace AsyncInput.Logic
         public static void ResetTime()
         {
             SafeDSPTime.SetOffset(0);
-            AsyncInputData.prevFrameTick = AsyncInputData.currFrameTick;
-            AsyncInputData.currFrameTick = TimeInstance.PTime.U_Tick();
-            AsyncInputData.offsetTick = AsyncInputData.currFrameTick - (ulong)SafeDSPTime.InterpolationDSPTimeAsFileTime;
+            AsyncInputData.prevFrameNano = AsyncInputData.currFrameNano;
+            AsyncInputData.currFrameNano = TimeInstance.PTime.U_NanoSecond();
             AsyncInputData.dspTime = SafeDSPTime.InterpolationDSPTime;
+            AsyncInputData.offsetNano = AsyncInputData.currFrameNano - (ulong)(AsyncInputData.dspTime * TimeConvert.D_Second_Nano);
         }
         public static void PauseTime()
         {
-            AsyncInputData.prevFrameTick = AsyncInputData.currFrameTick;
-            AsyncInputData.currFrameTick = TimeInstance.PTime.U_Tick();
-            AsyncInputData.offsetTick = AsyncInputData.currFrameTick - (ulong)SafeDSPTime.InterpolationDSPTimeAsFileTime;
+            AsyncInputData.prevFrameNano = AsyncInputData.currFrameNano;
+            AsyncInputData.currFrameNano = TimeInstance.PTime.U_NanoSecond();
             AsyncInputData.dspTime = SafeDSPTime.InterpolationDSPTime;
+            AsyncInputData.offsetNano = AsyncInputData.currFrameNano - (ulong)(AsyncInputData.dspTime * TimeConvert.D_Second_Nano);
         }
         public static void ConductorUpdate(scrConductor @this)
         {
@@ -46,43 +46,43 @@ namespace AsyncInput.Logic
                     return;
                 }
                 double audio_precise = SafeDSPTime.GetAuidoPrecise();
-                AsyncInputData.prevFrameTick = AsyncInputData.currFrameTick;
-                AsyncInputData.currFrameTick = TimeInstance.PTime.U_Tick();
-                AsyncInputData.dspTime = (AsyncInputData.currFrameTick - AsyncInputData.offsetTick) / 10000000.0;
-                AsyncInputData.offsetTick_REAL = AsyncInputData.currFrameTick - (ulong)SafeDSPTime.InterpolationDSPTimeAsFileTime;
-                AsyncInputData.offsetTicks[AsyncInputData.offsetTicksIndex++] = AsyncInputData.offsetTick_REAL;
-                long delta = (long)AsyncInputData.offsetTick_REAL - (long)AsyncInputData.offsetTick;
+                AsyncInputData.prevFrameNano = AsyncInputData.currFrameNano;
+                AsyncInputData.currFrameNano = TimeInstance.PTime.U_NanoSecond();
+                AsyncInputData.dspTime = (AsyncInputData.currFrameNano - AsyncInputData.offsetNano) / TimeConvert.D_Second_Nano;
+                AsyncInputData.offsetNano_REAL = AsyncInputData.currFrameNano - (ulong)(SafeDSPTime.InterpolationDSPTime * TimeConvert.D_Second_Nano);
+                AsyncInputData.offsetNanos[AsyncInputData.offsetNanosIndex++] = AsyncInputData.offsetNano_REAL;
+                long delta = (long)AsyncInputData.offsetNano_REAL - (long)AsyncInputData.offsetNano;
 
-                if (System.Math.Abs(delta) > audio_precise * 10000000 * 4 && audio_precise != 0)
+                if (System.Math.Abs(delta) > audio_precise * 1000000000 * 4 && audio_precise != 0)
                 {
-                    AsyncInputData.offsetTicksIndex = 0;
-                    AsyncInputData.offsetTick += (ulong)delta;
+                    AsyncInputData.offsetNanosIndex = 0;
+                    SafeDSPTime.AddOffset(delta / 100);
                     Starter.instance.log.WARN("DSPTime XRUN Error: " + delta);
                     goto JMP_RELOAD;
                 }
-                if (AsyncInputData.offsetTicksIndex == 30)
+                if (AsyncInputData.offsetNanosIndex == 30)
                 {
-                    AsyncInputData.offsetTicksIndex = 0;
+                    AsyncInputData.offsetNanosIndex = 0;
                     ulong datas = 0;
-                    foreach (ulong val in AsyncInputData.offsetTicks)
+                    foreach (ulong val in AsyncInputData.offsetNanos)
                         datas += val;
                     datas = datas / 30;
-                    delta = (long)datas - (long)AsyncInputData.offsetTick;
-                    if (System.Math.Abs(delta) > audio_precise * 5000000)
+                    delta = (long)datas - (long)AsyncInputData.offsetNano;
+                    if (System.Math.Abs(delta) > audio_precise * 500000000)
                     {
-                        AsyncInputData.offsetTick += (ulong)delta;
+                        SafeDSPTime.AddOffset(delta / 100);
                         Starter.instance.log.INFO("Offset fix");
                     }
                 }
 
-                AsyncInputManager.prevFrameTick = AsyncInputData.prevFrameTick;
-                AsyncInputManager.currFrameTick = AsyncInputData.currFrameTick;
-                AsyncInputManager.offsetTick = AsyncInputData.offsetTick;
+                AsyncInputManager.prevFrameTick = AsyncInputData.prevFrameNano / 100;
+                AsyncInputManager.currFrameTick = AsyncInputData.currFrameNano / 100;
+                AsyncInputManager.offsetTick = AsyncInputData.offsetNano / 100;
                 AsyncInputManager.previousFrameTime = Time.timeAsDouble;
                 AsyncInputManager.offsetTickUpdated = true;
 #if ALPHA_2_9_8_R136 || RELEASE_2_5_0_R110
                 AsyncInputManager.dspTime = AsyncInputData.dspTime;
-                AsyncInputManager.dspTimeSong = (double)dspTimeSong.GetValue(@this);
+                AsyncInputManager.dspTimeSong = dspTimeSong.get(@this);
 #endif
 
                 if (ADOBase.controller != null && !ADOBase.controller.paused)
@@ -92,16 +92,6 @@ namespace AsyncInput.Logic
             @this.prev_dspTime = @this.dspTime;
             @this.prev_unityDspTime = dspTime;
 #endif
-        }
-        public static void Hook(InputManager.FastPackage package)
-        {
-            if (!AsyncInputData.enabled)
-                return;
-            AsyncKeyEvent ake = default;
-            ake.time = package.time / 100; // nano time -> filetime
-            ake.key = (VirtualKeys)package.vkCode;
-            ake.state = package.flags == 1;
-            AsyncInputData.keyQueue.Enqueue(ake);
         }
         public static void UnInput()
         {
@@ -167,15 +157,15 @@ namespace AsyncInput.Logic
         }
 #if ALPHA_2_9_8_R136 || RELEASE_2_5_0_R110
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe void ProcessKeyInputs(scrController @this)
+        public static void ProcessKeyInputs(scrController @this)
         {
             if ((@this.state | (States)@this.stateMachine.GetState()) == States.PlayerControl)
             {
-                SimulatedPlayerUpdate(@this, AsyncInputData.currFrameTick);
+                SimulatedPlayerUpdate(@this, AsyncInputData.currFrameNano / 100);
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe void ProcessKeyInputs(scrController @this, ulong value, bool state)
+        public static void ProcessKeyInputs(scrController @this, ulong value, bool state)
         {
             if ((@this.state | (States)@this.stateMachine.GetState()) == States.PlayerControl && @this.currFloor != null && !@this.isCutscene)
             {
@@ -183,7 +173,7 @@ namespace AsyncInput.Logic
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe void WhileFloorNotChange(scrController @this, delegate*<scrController, ulong?, void> ptr, ulong? targetTick)
+        public static void WhileFloorNotChange(scrController @this, delegate*<scrController, ulong?, void> ptr, ulong? targetTick)
         {
             int num = -1;
             while (num != @this.currFloor.seqID)
@@ -192,7 +182,7 @@ namespace AsyncInput.Logic
                 ptr(@this, targetTick);
             }
         }
-        public static unsafe void SimulatedPlayerUpdate(scrController @this, ulong targetTick)
+        public static void SimulatedPlayerUpdate(scrController @this, ulong targetTick)
         {
             if (@this.currFloor == null || @this.isCutscene)
             {
@@ -230,8 +220,10 @@ namespace AsyncInput.Logic
                 scrController.overrideCamyToPos = topos;
             }
         }
-        public static unsafe void Fast_SimulatedPlayerUpdate(scrController @this, ulong targetTick, bool state)
+        public static void Fast_SimulatedPlayerUpdate(scrController @this, ulong targetTick, bool state)
         {
+            AsyncInputData.clickTime = targetTick;
+            targetTick /= 100;
             __nextTileIsHoldCached.set(@this, false);
             validInputWasReleasedThisFrame.set(@this, !state);
             cachedCamyToPos.set(@this, @this.camy.topos);
@@ -265,20 +257,58 @@ namespace AsyncInput.Logic
                 scrController.overrideCamyToPos = topos;
             }
         }
-#else
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe void ProcessKeyInputs(scrController @this)
+        public static void AdjustAngle(scrController controller, ulong tick)
+        {
+            if (AsyncInputData.clickTime / 100 == tick)
+                tick = AsyncInputData.clickTime;
+            else
+                tick *= 100;
+            if (AsyncInputManager.isActive)
+            {
+                AsyncInputManager.targetSongTick = (tick - AsyncInputData.offsetNano) / 100;
+#if RELEASE_2_5_0_R110
+                AsyncRefreshAngles(controller.chosenplanet, tick - AsyncInputData.offsetNano);
+#else
+                AsyncRefreshAngles(controller.chosenPlanet, tick - AsyncInputData.offsetNano);
+#endif
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void AsyncRefreshAngles(scrPlanet planet, ulong songtick)
+        {
+            planet.angle = GetAsyncAngle(planet, snappedLastAngle.get(planet), songtick);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double GetAsyncAngle(scrPlanet planet, double snappedLastAngle, ulong nowTick)
+        {
+            return snappedLastAngle + (GetSongPosition(planet.conductor, nowTick) - planet.conductor.lastHit) / planet.conductor.crotchetAtStart * System.Math.PI * planet.controller.speed * (double)(planet.controller.isCW ? 1 : (-1));
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double GetSongPosition(scrConductor conductor, ulong nowTick)
+        {
+            double callibration = scrConductor.currentPreset.inputOffset / 1000.0;
+            if (!GCS.d_oldConductor && !GCS.d_webglConductor)
+            {
+                return (nowTick / 1000000000.0 - AsyncInputManager.dspTimeSong - callibration) * (double)conductor.song.pitch - conductor.addoffset;
+            }
+
+            return conductor.song.timeSamples / (double)conductor.song.clip.frequency - callibration - conductor.addoffset / (double)conductor.song.pitch;
+        }
+#else
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ProcessKeyInputs(scrController @this)
         {
             if ((@this.state | (States)@this.stateMachine.GetState()) == States.PlayerControl)
             {
                 foreach (scrPlayer player in ADOBase.playerManager)
                 {
-                    SimulatedPlayerUpdate(player, AsyncInputData.currFrameTick);
+                    SimulatedPlayerUpdate(player, AsyncInputData.currFrameNano / 100);
                 }
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe void ProcessKeyInputs(scrController @this, ulong value, bool state)
+        public static void ProcessKeyInputs(scrController @this, ulong value, bool state)
         {
             if ((@this.state | (States)@this.stateMachine.GetState()) == States.PlayerControl)
             {
@@ -289,7 +319,7 @@ namespace AsyncInput.Logic
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe void WhileFloorNotChange(scrPlayer @this, delegate*<scrPlayer, ulong?, void> ptr, ulong? targetTick)
+        public static void WhileFloorNotChange(scrPlayer @this, delegate*<scrPlayer, ulong?, void> ptr, ulong? targetTick)
         {
             int num = -1;
             while (num != @this.currFloor.seqID)
@@ -298,7 +328,7 @@ namespace AsyncInput.Logic
                 ptr(@this, targetTick);
             }
         }
-        public static unsafe void SimulatedPlayerUpdate(scrPlayer @this, ulong targetTick)
+        public static void SimulatedPlayerUpdate(scrPlayer @this, ulong targetTick)
         {
             scrController ctrl = ADOBase.controller;
             if (!@this.alive || @this.currFloor == null || ctrl.isCutscene)
@@ -335,8 +365,10 @@ namespace AsyncInput.Logic
                 scrPlayer.overrideCamyToPos = topos;
             }
         }
-        public static unsafe void Fast_SimulatedPlayerUpdate(scrPlayer @this, ulong targetTick, bool state)
+        public static void Fast_SimulatedPlayerUpdate(scrPlayer @this, ulong targetTick, bool state)
         {
+            AsyncInputData.clickTime = targetTick;
+            targetTick /= 100;
             scrController ctrl = ADOBase.controller;
             if (!@this.alive || @this.currFloor == null || ctrl.isCutscene)
             {
@@ -373,6 +405,40 @@ namespace AsyncInput.Logic
                 scrPlayer.shouldReplaceCamyToPos = true;
                 scrPlayer.overrideCamyToPos = topos;
             }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void AdjustAngle(scrPlayer player, ulong tick)
+        {
+            if (AsyncInputData.clickTime / 100 == tick)
+                tick = AsyncInputData.clickTime;
+            else
+                tick *= 100;
+            if (AsyncInputManager.isActive)
+            {
+                AsyncInputManager.targetSongTick = (tick - AsyncInputData.offsetNano) / 100;
+                AsyncRefreshAngles(player.planetarySystem.chosenPlanet, tick - AsyncInputData.offsetNano);
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void AsyncRefreshAngles(scrPlanet planet, ulong songtick)
+        {
+            planet.angle = GetAsyncAngle(planet, planet.snappedLastAngle, songtick);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double GetAsyncAngle(scrPlanet planet, double snappedLastAngle, ulong nowTick)
+        {
+            return snappedLastAngle + (GetSongPosition(planet.conductor, nowTick) - planet.player.lastHit) / planet.conductor.crotchetAtStart * System.Math.PI * planet.planetarySystem.speed * (double)(planet.planetarySystem.isCW ? 1 : (-1));
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double GetSongPosition(scrConductor conductor, ulong nowTick)
+        {
+            double callibration = scrConductor.currentPreset.inputOffset / 1000.0;
+            if (!GCS.d_oldConductor && !GCS.d_webglConductor)
+            {
+                return (nowTick / 1000000000.0 - conductor.dspTimeSong - callibration) * (double)conductor.song.pitch - conductor.addoffset;
+            }
+
+            return conductor.song.timeSamples / (double)conductor.song.clip.frequency - callibration - conductor.addoffset / (double)conductor.song.pitch;
         }
 #endif
     }

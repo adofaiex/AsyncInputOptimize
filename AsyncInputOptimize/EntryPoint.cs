@@ -1,6 +1,5 @@
 ﻿using AsyncInputOptimize.Logic;
 using HarmonyLib;
-using System;
 using UnityEngine;
 using static UnityModManagerNet.UnityModManager;
 
@@ -39,6 +38,7 @@ namespace AsyncInputOptimize
         }
         public static void Setup(ModEntry me)
         {
+
             ui2d = new(12, 12);
             Color s = Color.white;
             Color n = new(1f, 1f, 1f, 0f);

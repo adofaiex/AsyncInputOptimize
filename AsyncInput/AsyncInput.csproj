@@ -54,6 +54,7 @@
 		<Reference Include="UnityEngine.CoreModule" />
 		<Reference Include="UnityEngine.IMGUIModule" />
 		<Reference Include="UnityEngine.InputModule" />
+		<Reference Include="UnityEngine.TextRenderingModule" />
 		<Reference Include="UnityEngine.UI" />
 	</ItemGroup>
 	<ItemGroup>
