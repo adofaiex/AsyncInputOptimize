@@ -57,7 +57,7 @@ namespace AsyncInput.Logic
                 if (System.Math.Abs(delta) > audio_precise * 1000000000 * 4 && audio_precise != 0)
                 {
                     AsyncInputData.offsetNanosIndex = 0;
-                    SafeDSPTime.AddOffset(delta / 100);
+                    SafeDSPTime.AddOffset(delta);
                     Starter.instance.log.WARN("DSPTime XRUN Error: " + delta);
                     goto JMP_RELOAD;
                 }
@@ -71,8 +71,17 @@ namespace AsyncInput.Logic
                     delta = (long)datas - (long)AsyncInputData.offsetNano;
                     if (System.Math.Abs(delta) > audio_precise * 500000000)
                     {
-                        SafeDSPTime.AddOffset(delta / 100);
-                        Starter.instance.log.INFO("Offset fix: " + delta);
+                        if (AsyncInputData.lastOffsetModify < 0 && System.Math.Abs(delta + AsyncInputData.lastOffsetModify) < 1000000)
+                        {
+                            delta = (delta - AsyncInputData.lastOffsetModify) >> 2;
+                            Starter.instance.log.INFO("Offset fix(AVG): " + delta);
+                        }
+                        else
+                        {
+                            Starter.instance.log.INFO("Offset fix: " + delta);
+                        }
+                        SafeDSPTime.AddOffset(delta);
+                        AsyncInputData.lastOffsetModify = delta;
                     }
                 }
 

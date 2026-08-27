@@ -115,6 +115,7 @@ namespace AsyncInput
             GUIL.Label(AsyncInputData.dspTime.ToString());
             GUIL.EndHorizontal();
             GUIL.NextLine();
+
             GUIL.BeginHorizontal();
             GUIL.LabelChar("SData:currFrameTick", 32);
             GUIL.Label(SongsData.currFrameTick.ToString());
@@ -134,6 +135,24 @@ namespace AsyncInput
             GUIL.BeginHorizontal();
             GUIL.LabelChar("SData:song2OffsetTick_REAL", 32);
             GUIL.Label(SongsData.song2OffsetTick_REAL.ToString());
+            GUIL.EndHorizontal();
+            GUIL.NextLine();
+
+            GUIL.BeginHorizontal();
+            GUIL.LabelChar("SDT:Offset", 32);
+            GUIL.Label(SafeDSPTime.GetOffset().ToString());
+            GUIL.EndHorizontal();
+            GUIL.BeginHorizontal();
+            GUIL.LabelChar("SDT:GetAuidoPrecise", 32);
+            GUIL.Label(SafeDSPTime.GetAuidoPrecise().ToString());
+            GUIL.EndHorizontal();
+            GUIL.BeginHorizontal();
+            GUIL.LabelChar("SDT:DSPTime", 32);
+            GUIL.Label(SafeDSPTime.DSPTime.ToString());
+            GUIL.EndHorizontal();
+            GUIL.BeginHorizontal();
+            GUIL.LabelChar("SDT:Interp.DSPTime", 32);
+            GUIL.Label(SafeDSPTime.InterpolationDSPTime.ToString());
             GUIL.EndHorizontal();
         }
     }

@@ -17,6 +17,7 @@ namespace AsyncInput.Logic
         public static double dspTime;
 
         public static ulong clickTime;
+        public static long lastOffsetModify;
 
         public static readonly FixedSPSCCircularQueue<AsyncKeyEvent> keyQueue = new(16);
         public static readonly bool[] keyMask = new bool[256];

@@ -1,21 +1,20 @@
-﻿using ModsTagLib;
-using ModsTagLib.Time;
+﻿using ModsTagLib.Time;
 using UnityEngine;
 
 namespace AsyncInput.Logic
 {
     public static unsafe class SongsHook
     {
-        private static ulong GetAudioTime(AudioSource source) => (ulong)(source.timeSamples * 10_000_000.0 / ((long)(source.pitch * 1000000) / 1000000.0) / source.clip.frequency);
+        private static ulong GetAudioTime(AudioSource source) => (ulong)(source.timeSamples * (10_000_000.0 / ((long)(source.pitch * 1000000) / 1000000.0)) / source.clip.frequency);
         public static void ResetTime()
         {
             scrConductor cdtr = ADOBase.conductor;
             SongsData.currFrameTick = TimeInstance.PTime.U_Tick();
             if (cdtr == null) return;
             if (cdtr.song != null && cdtr.song.isPlaying)
-                SongsData.song1OffsetTick = SongsData.currFrameTick - GetAudioTime(cdtr.song);
+                SongsData.song1OffsetTick = 0;
             if (cdtr.song2 != null && cdtr.song2.isPlaying)
-                SongsData.song2OffsetTick = SongsData.currFrameTick - GetAudioTime(cdtr.song2);
+                SongsData.song2OffsetTick = 0;
         }
         public static void CountdownUpdate()
         {
@@ -25,9 +24,21 @@ namespace AsyncInput.Logic
             if (ctrl.goShown || cdtr.fastTakeoff || !(ctrl.state == States.PlayerControl || ctrl.state == States.Countdown || ctrl.state == States.Checkpoint))
                 return;
             if (cdtr.song != null && cdtr.song.isPlaying)
-                SongsData.song1OffsetTick = (SongsData.song1OffsetTick + SongsData.currFrameTick - GetAudioTime(cdtr.song)) >> 1;
+            {
+                SongsData.song1OffsetTick_REAL = SongsData.currFrameTick - GetAudioTime(cdtr.song);
+                if (SongsData.song1OffsetTick == 0)
+                    SongsData.song1OffsetTick = SongsData.song1OffsetTick_REAL;
+                else
+                    SongsData.song1OffsetTick = (SongsData.song1OffsetTick + SongsData.song1OffsetTick_REAL) >> 1;
+            }
             if (cdtr.song2 != null && cdtr.song2.isPlaying)
-                SongsData.song2OffsetTick = (SongsData.song2OffsetTick + SongsData.currFrameTick - GetAudioTime(cdtr.song2)) >> 1;
+            {
+                SongsData.song2OffsetTick_REAL = SongsData.currFrameTick - GetAudioTime(cdtr.song2);
+                if (SongsData.song2OffsetTick == 0)
+                    SongsData.song2OffsetTick = SongsData.song2OffsetTick_REAL;
+                else
+                    SongsData.song2OffsetTick = (SongsData.song2OffsetTick + SongsData.song2OffsetTick_REAL) >> 1;
+            }
         }
         public static void ConductorUpdate(scrConductor @this)
         {
@@ -51,7 +62,7 @@ namespace AsyncInput.Logic
                     long delta = (long)offset_tick - (long)SongsData.song1OffsetTick;
                     if (System.Math.Abs(delta) > audio_precise * 10000000 * 3)
                     {
-                        Starter.instance.log.WARN("Song1 XRUN Error");
+                        Starter.instance.log.WARN("Song1 XRUN Error: " + delta);
                         @this.song.timeSamples += (int)(delta * @this.song.clip.frequency / 10_000_000) + (int)(audio_precise * @this.song.clip.frequency * SongsData.debug_multiply);
                     }
                 }
@@ -63,7 +74,7 @@ namespace AsyncInput.Logic
                     long delta = (long)offset_tick - (long)SongsData.song2OffsetTick;
                     if (System.Math.Abs(delta) > audio_precise * 10000000 * 3)
                     {
-                        Starter.instance.log.WARN("Song2 XRUN Error");
+                        Starter.instance.log.WARN("Song2 XRUN Error: " + delta);
                         @this.song2.timeSamples += (int)(delta * @this.song2.clip.frequency / 10_000_000) + (int)(audio_precise * @this.song2.clip.frequency * SongsData.debug_multiply);
                     }
                 }
