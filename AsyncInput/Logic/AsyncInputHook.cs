@@ -10,6 +10,7 @@ using static AsyncInput.SemiADOToolsLib.ADORef_scrPlayer;
 #endif
 using static AsyncInput.SemiADOToolsLib.ADORef_scrController;
 using static AsyncInput.SemiADOToolsLib.ADORef_scrConductor;
+using ModsTagLib;
 
 namespace AsyncInput.Logic
 {
@@ -51,7 +52,7 @@ namespace AsyncInput.Logic
                 AsyncInputData.dspTime = (AsyncInputData.currFrameNano - AsyncInputData.offsetNano) / TimeConvert.D_Second_Nano;
                 AsyncInputData.offsetNano_REAL = AsyncInputData.currFrameNano - (ulong)(SafeDSPTime.InterpolationDSPTime * TimeConvert.D_Second_Nano);
                 AsyncInputData.offsetNanos[AsyncInputData.offsetNanosIndex++] = AsyncInputData.offsetNano_REAL;
-                long delta = (long)AsyncInputData.offsetNano_REAL - (long)AsyncInputData.offsetNano;
+                long delta = (long)(AsyncInputData.offsetNano_REAL - AsyncInputData.offsetNano);
 
                 if (System.Math.Abs(delta) > audio_precise * 1000000000 * 4 && audio_precise != 0)
                 {
@@ -63,7 +64,7 @@ namespace AsyncInput.Logic
                 if (AsyncInputData.offsetNanosIndex == 30)
                 {
                     AsyncInputData.offsetNanosIndex = 0;
-                    ulong datas = 0;
+                    Int128 datas = 0;
                     foreach (ulong val in AsyncInputData.offsetNanos)
                         datas += val;
                     datas = datas / 30;
@@ -71,7 +72,7 @@ namespace AsyncInput.Logic
                     if (System.Math.Abs(delta) > audio_precise * 500000000)
                     {
                         SafeDSPTime.AddOffset(delta / 100);
-                        Starter.instance.log.INFO("Offset fix");
+                        Starter.instance.log.INFO("Offset fix: " + delta);
                     }
                 }
 

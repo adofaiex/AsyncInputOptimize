@@ -10,6 +10,7 @@ namespace AsyncInput.Patch
         {
             yield return new CodeInstruction(OpCodes.Ldarg_0);
             yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(PatchMidLayer), nameof(PatchMidLayer.AsyncRefreshAngles)));
+            yield return new CodeInstruction(OpCodes.Ret);
             yield break;
         }
     }

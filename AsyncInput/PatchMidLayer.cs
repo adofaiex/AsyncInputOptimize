@@ -1,5 +1,6 @@
 ﻿using ADOFAI.Common.Platform;
 using AsyncInput.Logic;
+using AsyncInput.SemiADOToolsLib;
 
 namespace AsyncInput
 {
@@ -54,13 +55,13 @@ namespace AsyncInput
         {
             AsyncInputHook.AsyncRefreshAngles(planet, AsyncInputManager.targetSongTick * 100);
         }
-        public static void GetAngle(scrPlanet planet, double snappedLastAngle, ulong nowTick)
+        public static double GetAngle(scrPlanet planet, double snappedLastAngle, ulong nowTick)
         {
-            AsyncInputHook.GetAsyncAngle(planet, snappedLastAngle, nowTick * 100);
+            return AsyncInputHook.GetAsyncAngle(planet, snappedLastAngle, nowTick * 100);
         }
-        public static void GetSongPosition(scrConductor conductor, ulong nowTick)
+        public static double GetSongPosition(scrConductor conductor, ulong nowTick)
         {
-            AsyncInputHook.GetSongPosition(conductor, nowTick * 100);
+            return AsyncInputHook.GetSongPosition(conductor, nowTick * 100);
         }
 #else
         public static void AdjustAngle(scrPlayer player, ulong tick)
@@ -71,13 +72,13 @@ namespace AsyncInput
         {
             AsyncInputHook.AsyncRefreshAngles(planet, AsyncInputManager.targetSongTick * 100);
         }
-        public static void GetAngle(scrPlanet planet, double snappedLastAngle, ulong nowTick)
+        public static double GetAngle(scrPlanet planet, double snappedLastAngle, ulong nowTick)
         {
-            AsyncInputHook.GetAsyncAngle(planet, snappedLastAngle, nowTick * 100);
+            return AsyncInputHook.GetAsyncAngle(planet, snappedLastAngle, nowTick * 100);
         }
-        public static void GetSongPosition(scrConductor conductor, ulong nowTick)
+        public static double GetSongPosition(scrConductor conductor, ulong nowTick)
         {
-            AsyncInputHook.GetSongPosition(conductor, nowTick * 100);
+            return AsyncInputHook.GetSongPosition(conductor, nowTick * 100);
         }
 #endif
     }

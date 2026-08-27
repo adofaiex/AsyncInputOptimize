@@ -95,6 +95,9 @@
 		<Exec Condition="'$(Configuration)'=='Release'" Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running\release\Mods\$(MSBuildProjectName)\&quot;" />
 		<Exec Condition="'$(Configuration)'=='Release'" Command="xcopy /Y &quot;$(SolutionDir)..\..\__global\ModsTagLib\__result\Mono\ModsTagLib.Unity&quot; &quot;$(SolutionDir)..\__running\release\Mods\ModsTagLib.Unity\&quot;" />
 
+		<Exec Condition="'$(Configuration)'=='Release_2_5_0_R110'" Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running\release_2.5.0_r110\Mods\$(MSBuildProjectName)\&quot;" />
+		<Exec Condition="'$(Configuration)'=='Release_2_5_0_R110'" Command="xcopy /Y &quot;$(SolutionDir)..\..\__global\ModsTagLib\__result\Mono\ModsTagLib.Unity&quot; &quot;$(SolutionDir)..\__running\release_2.5.0_r110\Mods\ModsTagLib.Unity\&quot;" />
+
 	</Target>
 	<Target Name="PurgeImplicitFrameworkMacros" BeforeTargets="BeforeCompile;CoreCompile">
 		<PropertyGroup>
