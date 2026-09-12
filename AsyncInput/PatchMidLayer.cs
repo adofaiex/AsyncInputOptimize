@@ -1,6 +1,5 @@
 ﻿using ADOFAI.Common.Platform;
 using AsyncInput.Logic;
-using AsyncInput.SemiADOToolsLib;
 
 namespace AsyncInput
 {
@@ -22,6 +21,7 @@ namespace AsyncInput
         }
         public static void CountdownUpdate(scrCountdown @this)
         {
+            AsyncInputHook.CountdownUpdate();
             SongsHook.CountdownUpdate();
         }
         public static void ConductorUpdate(scrConductor @this)
@@ -70,7 +70,11 @@ namespace AsyncInput
         }
         public static void AsyncRefreshAngles(scrPlanet planet)
         {
+#if ALPHA_2_9_8_R136 || RELEASE_2_5_0_R110 || RELEASE || BETA
             AsyncInputHook.AsyncRefreshAngles(planet, AsyncInputManager.targetSongTick * 100);
+#else
+            AsyncInputHook.AsyncRefreshAngles(planet, (ulong)AsyncInputManager.targetSongTick * 100);
+#endif
         }
         public static double GetAngle(scrPlanet planet, double snappedLastAngle, ulong nowTick)
         {

@@ -10,7 +10,9 @@ namespace AsyncInput.SemiADOToolsLib
     public static class ADORef_scrConductor
     {
         public static readonly Type @this = typeof(scrConductor);
+#if ALPHA_2_9_8_R136 || RELEASE_2_5_0_R110
         public static readonly RFReference<double, scrConductor> dspTimeSong = TryFieldRef<double, scrConductor>(nameof(dspTimeSong));
+#endif
         public static readonly RFReference<double, scrConductor> previousFrameTime = TryFieldRef<double, scrConductor>(nameof(previousFrameTime));
         public static readonly RFReference<double, scrConductor> lastReportedPlayheadPosition = TryFieldRef<double, scrConductor>(nameof(lastReportedPlayheadPosition));
     }

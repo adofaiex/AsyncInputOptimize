@@ -66,9 +66,16 @@ namespace AsyncInputOptimize.Logic
                     }
                 }
 
+
+#if ALPHA_2_9_8_R136 || RELEASE_2_5_0_R110 || RELEASE || BETA
                 AsyncInputManager.prevFrameTick = AsyncInputData.prevFrameTick;
                 AsyncInputManager.currFrameTick = AsyncInputData.currFrameTick;
-                AsyncInputManager.offsetTick = AsyncInputData.offsetTick;
+                AsyncInputManager.offsetTick = AsyncInputData.offsetTick; 
+#else
+                AsyncInputManager.prevFrameTick = (long)AsyncInputData.prevFrameTick;
+                AsyncInputManager.currFrameTick = (long)AsyncInputData.currFrameTick;
+                AsyncInputManager.offsetTick = (long)AsyncInputData.offsetTick;
+#endif
                 AsyncInputManager.previousFrameTime = Time.timeAsDouble;
                 AsyncInputManager.offsetTickUpdated = true;
 #if ALPHA_2_9_8_R136 || RELEASE_2_5_0_R110

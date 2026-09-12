@@ -49,36 +49,56 @@ namespace AsyncInput.Logic
                 CountdownUpdate();
                 return;
             }
-            if (AsyncInputManager.isActive)
+            if (!(AsyncInputManager.isActive && AsyncInputData.enabled))
+                return;
+
+            if ((SongsData.song1OffsetTick | SongsData.song2OffsetTick) == 0)
+                ResetTime();
+
+            double audio_precise = SafeDSPTime.GetAuidoPrecise();
+
+            if (@this.song != null && @this.song.isPlaying)
             {
-                if ((SongsData.song1OffsetTick | SongsData.song2OffsetTick) == 0)
-                    ResetTime();
-                double audio_precise = SafeDSPTime.GetAuidoPrecise();
-                if (@this.song != null && @this.song.isPlaying)
+                ulong offset_tick = SongsData.song1OffsetTick_REAL;
+                SongsData.song1OffsetTick_REAL = SongsData.currFrameTick - GetAudioTime(@this.song);
+                offset_tick = (offset_tick + SongsData.song1OffsetTick_REAL) >> 1;
+                long delta = (long)(offset_tick - SongsData.song1OffsetTick);
+                if (delta > 0 && SongsData.song1_offset)
+                    goto NEXT;
+                else if (SongsData.song1_offset)
+                    SongsData.song1_offset = false;
+
+                if (System.Math.Abs(delta) <= audio_precise * 10000000 * 3)
+                    goto NEXT;
+                if (SwapArea.audioDelta != 0)
                 {
-                    ulong offset_tick = SongsData.song1OffsetTick_REAL;
-                    SongsData.song1OffsetTick_REAL = SongsData.currFrameTick - GetAudioTime(@this.song);
-                    offset_tick = (offset_tick + SongsData.song1OffsetTick_REAL) >> 1;
-                    long delta = (long)offset_tick - (long)SongsData.song1OffsetTick;
-                    if (System.Math.Abs(delta) > audio_precise * 10000000 * 3)
-                    {
-                        Starter.instance.log.WARN("Song1 XRUN Error: " + delta);
-                        @this.song.timeSamples += (int)(delta * @this.song.clip.frequency / 10_000_000) + (int)(audio_precise * @this.song.clip.frequency * SongsData.debug_multiply);
-                    }
+                    Starter.instance.log.WARN("Song1 Error: " + (SwapArea.audioDelta / TimeConvert.D_Second_Nano));
+                    @this.song.timeSamples -= (int)((SwapArea.audioDelta / TimeConvert.D_Second_Nano + audio_precise * SongsData.debug_multiply) * @this.song.clip.frequency);
+                    SongsData.song1_offset = true;
+                    SwapArea.audioDelta = 0;
                 }
-                if (@this.song2 != null && @this.song2.isPlaying)
+                else
                 {
-                    ulong offset_tick = SongsData.song2OffsetTick_REAL;
-                    SongsData.song2OffsetTick_REAL = SongsData.currFrameTick - GetAudioTime(@this.song2);
-                    offset_tick = (offset_tick + SongsData.song2OffsetTick_REAL) >> 1;
-                    long delta = (long)offset_tick - (long)SongsData.song2OffsetTick;
-                    if (System.Math.Abs(delta) > audio_precise * 10000000 * 3)
-                    {
-                        Starter.instance.log.WARN("Song2 XRUN Error: " + delta);
-                        @this.song2.timeSamples += (int)(delta * @this.song2.clip.frequency / 10_000_000) + (int)(audio_precise * @this.song2.clip.frequency * SongsData.debug_multiply);
-                    }
+                    Starter.instance.log.WARN("Song1 Error: " + delta);
+                    long value = (long)(SongsData.currFrameTick - SongsData.song1OffsetTick);
+                    @this.song.timeSamples = (int)((value / TimeConvert.D_Second_Tick + audio_precise * SongsData.debug_multiply) * @this.song.clip.frequency);
                 }
             }
+        NEXT:
+            if (@this.song2 != null && @this.song2.isPlaying)
+            {
+                ulong offset_tick = SongsData.song2OffsetTick_REAL;
+                SongsData.song2OffsetTick_REAL = SongsData.currFrameTick - GetAudioTime(@this.song2);
+                offset_tick = (offset_tick + SongsData.song2OffsetTick_REAL) >> 1;
+                long delta = (long)(offset_tick - SongsData.song2OffsetTick);
+                if (System.Math.Abs(delta) > audio_precise * 10000000 * 3)
+                {
+                    Starter.instance.log.WARN("Song2 Error: " + delta);
+                    @this.song2.timeSamples += (int)(delta * @this.song2.clip.frequency / 10_000_000) + (int)(audio_precise * @this.song2.clip.frequency * SongsData.debug_multiply);
+                }
+            }
+        EMD:
+            return;
         }
     }
 }

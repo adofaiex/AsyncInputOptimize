@@ -23,9 +23,22 @@ namespace AsyncInput.Logic
             AsyncInputData.currFrameNano = TimeInstance.PTime.U_NanoSecond();
             AsyncInputData.dspTime = SafeDSPTime.InterpolationDSPTime;
             AsyncInputData.offsetNano = AsyncInputData.currFrameNano - (ulong)(AsyncInputData.dspTime * TimeConvert.D_Second_Nano);
+            SwapArea.audioDelta = 0;
         }
         public static void PauseTime()
         {
+            AsyncInputData.prevFrameNano = AsyncInputData.currFrameNano;
+            AsyncInputData.currFrameNano = TimeInstance.PTime.U_NanoSecond();
+            AsyncInputData.dspTime = SafeDSPTime.InterpolationDSPTime;
+            AsyncInputData.offsetNano = AsyncInputData.currFrameNano - (ulong)(AsyncInputData.dspTime * TimeConvert.D_Second_Nano);
+            SwapArea.audioDelta = 0;
+        }
+        public static void CountdownUpdate()
+        {
+            scrController ctrl = scrController.instance;
+            scrConductor cdtr = scrConductor.instance;
+            if (ctrl.goShown || cdtr.fastTakeoff || !(ctrl.state == States.PlayerControl || ctrl.state == States.Countdown || ctrl.state == States.Checkpoint))
+                return;
             AsyncInputData.prevFrameNano = AsyncInputData.currFrameNano;
             AsyncInputData.currFrameNano = TimeInstance.PTime.U_NanoSecond();
             AsyncInputData.dspTime = SafeDSPTime.InterpolationDSPTime;
@@ -41,6 +54,11 @@ namespace AsyncInput.Logic
             previousFrameTime.set(@this, time);
             if (AsyncInputManager.isActive)
             {
+                if (scrController.instance != null && !scrController.instance.goShown)
+                {
+                    CountdownUpdate();
+                    goto END;
+                }
                 if (scrController.instance?.paused ?? true)
                 {
                     PauseTime();
@@ -54,10 +72,11 @@ namespace AsyncInput.Logic
                 AsyncInputData.offsetNanos[AsyncInputData.offsetNanosIndex++] = AsyncInputData.offsetNano_REAL;
                 long delta = (long)(AsyncInputData.offsetNano_REAL - AsyncInputData.offsetNano);
 
-                if (System.Math.Abs(delta) > audio_precise * 1000000000 * 4 && audio_precise != 0)
+                if (System.Math.Abs(delta) > audio_precise * TimeConvert.I_Second_Nano * 4 && audio_precise != 0)
                 {
                     AsyncInputData.offsetNanosIndex = 0;
                     SafeDSPTime.AddOffset(delta);
+                    SwapArea.audioDelta += delta;
                     Starter.instance.log.WARN("DSPTime XRUN Error: " + delta);
                     goto JMP_RELOAD;
                 }
@@ -67,32 +86,41 @@ namespace AsyncInput.Logic
                     Int128 datas = 0;
                     foreach (ulong val in AsyncInputData.offsetNanos)
                         datas += val;
-                    datas = datas / 30;
-                    delta = (long)datas - (long)AsyncInputData.offsetNano;
+                    delta = (long)((datas / 30).Low - AsyncInputData.offsetNano);
                     if (System.Math.Abs(delta) > audio_precise * 500000000)
                     {
                         if (AsyncInputData.lastOffsetModify < 0 && System.Math.Abs(delta + AsyncInputData.lastOffsetModify) < 1000000)
                         {
+                            SwapArea.audioDelta -= AsyncInputData.lastOffsetModify;
                             delta = (delta - AsyncInputData.lastOffsetModify) >> 2;
                             Starter.instance.log.INFO("Offset fix(AVG): " + delta);
                         }
                         else
                         {
+                            SwapArea.audioDelta += delta;
                             Starter.instance.log.INFO("Offset fix: " + delta);
                         }
                         SafeDSPTime.AddOffset(delta);
                         AsyncInputData.lastOffsetModify = delta;
                     }
                 }
+            END:
 
+#if ALPHA_2_9_8_R136 || RELEASE_2_5_0_R110 || RELEASE || BETA
                 AsyncInputManager.prevFrameTick = AsyncInputData.prevFrameNano / 100;
                 AsyncInputManager.currFrameTick = AsyncInputData.currFrameNano / 100;
-                AsyncInputManager.offsetTick = AsyncInputData.offsetNano / 100;
+                AsyncInputManager.offsetTick = AsyncInputData.offsetNano / 100; 
+#else
+                AsyncInputManager.prevFrameTick = (long)(AsyncInputData.prevFrameNano / 100);
+                AsyncInputManager.currFrameTick = (long)(AsyncInputData.currFrameNano / 100);
+                AsyncInputManager.offsetTick = (long)(AsyncInputData.offsetNano / 100);
+#endif
                 AsyncInputManager.previousFrameTime = Time.timeAsDouble;
                 AsyncInputManager.offsetTickUpdated = true;
 #if ALPHA_2_9_8_R136 || RELEASE_2_5_0_R110
                 AsyncInputManager.dspTime = AsyncInputData.dspTime;
                 AsyncInputManager.dspTimeSong = dspTimeSong.get(@this);
+#else
 #endif
 
                 if (ADOBase.controller != null && !ADOBase.controller.paused)
@@ -306,7 +334,7 @@ namespace AsyncInput.Logic
             return conductor.song.timeSamples / (double)conductor.song.clip.frequency - callibration - conductor.addoffset / (double)conductor.song.pitch;
         }
 #else
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ProcessKeyInputs(scrController @this)
         {
             if ((@this.state | (States)@this.stateMachine.GetState()) == States.PlayerControl)
@@ -425,7 +453,11 @@ namespace AsyncInput.Logic
                 tick *= 100;
             if (AsyncInputManager.isActive)
             {
+#if ALPHA_2_9_8_R136 || RELEASE_2_5_0_R110 || RELEASE || BETA
                 AsyncInputManager.targetSongTick = (tick - AsyncInputData.offsetNano) / 100;
+#else
+                AsyncInputManager.targetSongTick = (long)((tick - AsyncInputData.offsetNano) / 100);
+#endif
                 AsyncRefreshAngles(player.planetarySystem.chosenPlanet, tick - AsyncInputData.offsetNano);
             }
         }

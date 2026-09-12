@@ -9,6 +9,7 @@
         public static ulong song1OffsetTick_REAL;
         public static ulong song2OffsetTick_REAL;
 
-        public static int debug_multiply = 3;
+        public static int debug_multiply = 4;
+        public static bool song1_offset = false;
     }
 }

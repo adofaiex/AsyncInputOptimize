@@ -49,7 +49,6 @@ namespace AsyncInput
 #if RELEASE_2_5_0_R110
             SafeDSPTime.Init();
 #endif
-
             dmpch = new(this, "DynamicPatch");
             dmpch.Add(BasePatch.New(typeof(SkyHook__SkyHookManager), typeof(SkyHook.SkyHookManager), "_StartHook", PatchTypes.Transpiler));
             dmpch.Add(BasePatch.New(typeof(SkyHook__SkyHookManager), typeof(SkyHook.SkyHookManager), "_StopHook", PatchTypes.Transpiler));
@@ -57,6 +56,7 @@ namespace AsyncInput
             dmpch.Add(BasePatch.New(typeof(__AsyncInputUtils), typeof(AsyncInputUtils), "AdjustAngle", PatchTypes.Transpiler));
             dmpch.Add(BasePatch.New(typeof(__AsyncInputUtils), typeof(AsyncInputUtils), "GetAngle", PatchTypes.Transpiler));
             dmpch.Add(BasePatch.New(typeof(__AsyncInputUtils), typeof(AsyncInputUtils), "GetSongPosition", PatchTypes.Transpiler));
+            dmpch.Add(BasePatch.New(typeof(__AudioManager), typeof(AudioManager), "Play", PatchTypes.Transpiler));
             dmpch.Add(BasePatch.New(typeof(__scrPlanet), typeof(scrPlanet), "AsyncRefreshAngles", PatchTypes.Transpiler));
             dmpch.Add(BasePatch.New(typeof(__scnGame), typeof(scnGame), "Play", PatchTypes.Transpiler));
             dmpch.Add(BasePatch.New(typeof(__scrConductor), typeof(scrConductor), "Start", PatchTypes.Transpiler));
