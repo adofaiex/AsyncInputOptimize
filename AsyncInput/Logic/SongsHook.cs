@@ -72,14 +72,14 @@ namespace AsyncInput.Logic
                     goto NEXT;
                 if (SwapArea.audioDelta != 0)
                 {
-                    Starter.instance.log.WARN("Song1 Error: " + (SwapArea.audioDelta / TimeConvert.D_Second_Nano));
+                    Starter.bootFile.Log.WARN("Song1 Error: " + (SwapArea.audioDelta / TimeConvert.D_Second_Nano));
                     @this.song.timeSamples -= (int)((SwapArea.audioDelta / TimeConvert.D_Second_Nano + audio_precise * SongsData.debug_multiply) * @this.song.clip.frequency);
                     SongsData.song1_offset = true;
                     SwapArea.audioDelta = 0;
                 }
                 else
                 {
-                    Starter.instance.log.WARN("Song1 Error: " + delta);
+                    Starter.bootFile.Log.WARN("Song1 Error: " + delta);
                     long value = (long)(SongsData.currFrameTick - SongsData.song1OffsetTick);
                     @this.song.timeSamples = (int)((value / TimeConvert.D_Second_Tick + audio_precise * SongsData.debug_multiply) * @this.song.clip.frequency);
                 }
@@ -93,12 +93,10 @@ namespace AsyncInput.Logic
                 long delta = (long)(offset_tick - SongsData.song2OffsetTick);
                 if (System.Math.Abs(delta) > audio_precise * 10000000 * 3)
                 {
-                    Starter.instance.log.WARN("Song2 Error: " + delta);
+                    Starter.bootFile.Log.WARN("Song2 Error: " + delta);
                     @this.song2.timeSamples += (int)(delta * @this.song2.clip.frequency / 10_000_000) + (int)(audio_precise * @this.song2.clip.frequency * SongsData.debug_multiply);
                 }
             }
-        EMD:
-            return;
         }
     }
 }

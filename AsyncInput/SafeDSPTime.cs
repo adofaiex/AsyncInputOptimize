@@ -64,7 +64,7 @@ namespace AsyncInput
             }
             if (time_index == -1)
             {
-                Starter.instance.log.WARN("TimeUpdate not found");
+                Starter.bootFile.Log.WARN("TimeUpdate not found");
                 return;
             }
             PlayerLoopSystem time_update = loop.subSystemList[time_index];
@@ -79,7 +79,7 @@ namespace AsyncInput
             }
             if (subtime_index == -1)
             {
-                Starter.instance.log.WARN("TimeUpdate.WaitForLastPresentationAndUpdateTime not found");
+                Starter.bootFile.Log.WARN("TimeUpdate.WaitForLastPresentationAndUpdateTime not found");
                 return;
             }
 

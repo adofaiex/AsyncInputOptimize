@@ -58,8 +58,8 @@
 		<Reference Include="UnityEngine.UI" />
 	</ItemGroup>
 	<ItemGroup>
-		<Reference Include="UnityModManager">
-			<HintPath>..\..\__lib\UnityModManager.dll</HintPath>
+		<Reference Include="ADOMapLib">
+			<HintPath>..\..\ADOMapLib\ADOMapLib\bin\x64\$(Configuration)\net481\ADOMapLib.dll</HintPath>
 		</Reference>
 		<Reference Include="0Harmony">
 			<HintPath>..\..\__lib\0Harmony.dll</HintPath>
@@ -83,20 +83,20 @@
 		</Reference>
 	</ItemGroup>
 	<Target Name="CopyModFilesAfterBuild" AfterTargets="Build">
-		<Exec Condition="'$(Configuration)'=='Alpha'" Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running\alpha\Mods\$(MSBuildProjectName)\&quot;" />
-		<Exec Condition="'$(Configuration)'=='Alpha'" Command="xcopy /Y &quot;$(SolutionDir)..\..\__global\ModsTagLib\__result\Mono\ModsTagLib.Unity&quot; &quot;$(SolutionDir)..\__running\alpha\Mods\ModsTagLib.Unity\&quot;" />
+		<Exec Condition="'$(Configuration)'=='Alpha'" Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running\alpha\MTModules\$(MSBuildProjectName)\&quot;" />
+		<Exec Condition="'$(Configuration)'=='Alpha'" Command="xcopy /Y &quot;$(SolutionDir)..\..\__global\ModsTagLib\__result\Mono\ModsTagLib.Unity&quot; &quot;$(SolutionDir)..\__running\alpha\ModsTagLib.Unity\&quot;" />
 
-		<Exec Condition="'$(Configuration)'=='Alpha_2_9_8_R136'" Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running\alpha_2.9.8_r136\Mods\$(MSBuildProjectName)\&quot;" />
-		<Exec Condition="'$(Configuration)'=='Alpha_2_9_8_R136'" Command="xcopy /Y &quot;$(SolutionDir)..\..\__global\ModsTagLib\__result\Mono\ModsTagLib.Unity&quot; &quot;$(SolutionDir)..\__running\alpha_2.9.8_r136\Mods\ModsTagLib.Unity\&quot;" />
+		<Exec Condition="'$(Configuration)'=='Alpha_2_9_8_R136'" Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running\alpha_2.9.8_r136\MTModules\$(MSBuildProjectName)\&quot;" />
+		<Exec Condition="'$(Configuration)'=='Alpha_2_9_8_R136'" Command="xcopy /Y &quot;$(SolutionDir)..\..\__global\ModsTagLib\__result\Mono\ModsTagLib.Unity&quot; &quot;$(SolutionDir)..\__running\alpha_2.9.8_r136\ModsTagLib.Unity\&quot;" />
 
-		<Exec Condition="'$(Configuration)'=='Beta'" Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running\beta\Mods\$(MSBuildProjectName)\&quot;" />
-		<Exec Condition="'$(Configuration)'=='Beta'" Command="xcopy /Y &quot;$(SolutionDir)..\..\__global\ModsTagLib\__result\Mono\ModsTagLib.Unity&quot; &quot;$(SolutionDir)..\__running\beta\Mods\ModsTagLib.Unity\&quot;" />
+		<Exec Condition="'$(Configuration)'=='Beta'" Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running\beta\MTModules\$(MSBuildProjectName)\&quot;" />
+		<Exec Condition="'$(Configuration)'=='Beta'" Command="xcopy /Y &quot;$(SolutionDir)..\..\__global\ModsTagLib\__result\Mono\ModsTagLib.Unity&quot; &quot;$(SolutionDir)..\__running\beta\ModsTagLib.Unity\&quot;" />
 
-		<Exec Condition="'$(Configuration)'=='Release'" Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running\release\Mods\$(MSBuildProjectName)\&quot;" />
-		<Exec Condition="'$(Configuration)'=='Release'" Command="xcopy /Y &quot;$(SolutionDir)..\..\__global\ModsTagLib\__result\Mono\ModsTagLib.Unity&quot; &quot;$(SolutionDir)..\__running\release\Mods\ModsTagLib.Unity\&quot;" />
+		<Exec Condition="'$(Configuration)'=='Release'" Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running\release\MTModules\$(MSBuildProjectName)\&quot;" />
+		<Exec Condition="'$(Configuration)'=='Release'" Command="xcopy /Y &quot;$(SolutionDir)..\..\__global\ModsTagLib\__result\Mono\ModsTagLib.Unity&quot; &quot;$(SolutionDir)..\__running\release\ModsTagLib.Unity\&quot;" />
 
-		<Exec Condition="'$(Configuration)'=='Release_2_5_0_R110'" Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running\release_2.5.0_r110\Mods\$(MSBuildProjectName)\&quot;" />
-		<Exec Condition="'$(Configuration)'=='Release_2_5_0_R110'" Command="xcopy /Y &quot;$(SolutionDir)..\..\__global\ModsTagLib\__result\Mono\ModsTagLib.Unity&quot; &quot;$(SolutionDir)..\__running\release_2.5.0_r110\Mods\ModsTagLib.Unity\&quot;" />
+		<Exec Condition="'$(Configuration)'=='Release_2_5_0_R110'" Command="xcopy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\__running\release_2.5.0_r110\MTModules\$(MSBuildProjectName)\&quot;" />
+		<Exec Condition="'$(Configuration)'=='Release_2_5_0_R110'" Command="xcopy /Y &quot;$(SolutionDir)..\..\__global\ModsTagLib\__result\Mono\ModsTagLib.Unity&quot; &quot;$(SolutionDir)..\__running\release_2.5.0_r110\ModsTagLib.Unity\&quot;" />
 
 	</Target>
 	<Target Name="PurgeImplicitFrameworkMacros" BeforeTargets="BeforeCompile;CoreCompile">

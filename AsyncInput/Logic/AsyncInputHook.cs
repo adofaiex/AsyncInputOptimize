@@ -77,7 +77,7 @@ namespace AsyncInput.Logic
                     AsyncInputData.offsetNanosIndex = 0;
                     SafeDSPTime.AddOffset(delta);
                     SwapArea.audioDelta += delta;
-                    Starter.instance.log.WARN("DSPTime XRUN Error: " + delta);
+                    Starter.bootFile.Log.WARN("DSPTime XRUN Error: " + delta);
                     goto JMP_RELOAD;
                 }
                 if (AsyncInputData.offsetNanosIndex == 30)
@@ -93,12 +93,12 @@ namespace AsyncInput.Logic
                         {
                             SwapArea.audioDelta -= AsyncInputData.lastOffsetModify;
                             delta = (delta - AsyncInputData.lastOffsetModify) >> 2;
-                            Starter.instance.log.INFO("Offset fix(AVG): " + delta);
+                            Starter.bootFile.Log.INFO("Offset fix(AVG): " + delta);
                         }
                         else
                         {
                             SwapArea.audioDelta += delta;
-                            Starter.instance.log.INFO("Offset fix: " + delta);
+                            Starter.bootFile.Log.INFO("Offset fix: " + delta);
                         }
                         SafeDSPTime.AddOffset(delta);
                         AsyncInputData.lastOffsetModify = delta;

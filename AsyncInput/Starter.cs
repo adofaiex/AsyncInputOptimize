@@ -1,43 +1,38 @@
 ﻿using AsyncInput.Core;
 using AsyncInput.Logic;
 using AsyncInput.Patch;
-using ModsTagLib.FileFormat.Json;
 using ModsTagLib.Unity;
+using ModsTagLib.Unity.MiniModLoader;
 using ModsTagLib.Unity.ModLayout;
 using ModsTagLib.Win32;
 using System;
 using UnityEngine;
-using UnityModManagerNet;
 
 namespace AsyncInput
 {
-    public sealed class Starter : ModsTagLib.Unity.Starter
+    public sealed class Starter : ModEventSystem
     {
-        internal Starter(UnityModManager.ModEntry me) : base(me.Path, me.Info.Id)
+        public static void __Bootstrap()
         {
-            modEntry = me;
-            this.AutoWithUmm(me);
+            bootFile = ModLoader.GetCurrentModData();
+            instance = new();
         }
 
-        public static UnityModManager.ModEntry modEntry;
+        internal Starter() : base(bootFile)
+        {
+        }
+
         public static DynamicPatch dmpch;
         public static Starter instance;
-        private static int id = -1;
-
-        public static void __Bootstrap(UnityModManager.ModEntry me)
-        {
-            instance = new Starter(me);
-        }
+        public static BootFile bootFile;
 
         protected override void Awake()
         {
-        }
-        protected override void EnabledMod()
-        {
-            log.allowDebug = true;
-            log.optimizeDataType = true;
-            log.writeParams = true;
-            log.MethodType = LogMethod.All;
+            bootFile.Log.allowDebug = true;
+            bootFile.Log.optimizeDataType = true;
+            bootFile.Log.writeParams = true;
+            bootFile.Log.MethodType = LogMethod.All;
+
             Config.JObject = JExtend.Load(GetPath(Config.FILE_NAME));
 
             bool active = AsyncInputManager.isActive;
@@ -49,7 +44,7 @@ namespace AsyncInput
 #if RELEASE_2_5_0_R110
             SafeDSPTime.Init();
 #endif
-            dmpch = new(this, "DynamicPatch");
+            dmpch = new(bootFile, "DynamicPatch");
             dmpch.Add(BasePatch.New(typeof(SkyHook__SkyHookManager), typeof(SkyHook.SkyHookManager), "_StartHook", PatchTypes.Transpiler));
             dmpch.Add(BasePatch.New(typeof(SkyHook__SkyHookManager), typeof(SkyHook.SkyHookManager), "_StopHook", PatchTypes.Transpiler));
             dmpch.Add(BasePatch.New(typeof(SkyHook__SkyHookManager), typeof(SkyHook.SkyHookManager), "get_isHookActive", PatchTypes.Transpiler));
@@ -72,24 +67,16 @@ namespace AsyncInput
                 AsyncInputManager.ToggleHook(true);
             }
         }
-        protected override void DisabledMod()
+        internal static void OpenGUI()
         {
-            AudioSettings.OnAudioConfigurationChanged -= SafeDSPTime.Init;
-            dmpch.UnPatch();
-        }
-        protected override void OpenGUI()
-        {
-            guiInstance.StyleType = GUILInstance.UIType.ColorUI_V1;
+            instance.guiInstance.StyleType = GUILInstance.UIType.ColorUI;
             FastGUI.Load();
         }
-        protected override void OptionGUI()
+        internal static void OptionGUI()
         {
             AsyncInput.OptionGUI.Main();
         }
-        protected override void Patch()
-        {
-        }
-        protected override void Save()
+        protected override void Exit()
         {
             JExtend.Save(Config.JObject, GetPath(Config.FILE_NAME));
         }
@@ -149,9 +136,23 @@ namespace AsyncInput
         {
         }
 
-        protected override object CustomEvent(ModsTagLib.Unity.Starter target, long id)
+        protected unsafe override Pointer CustomEvent(BootFile caller, ulong data)
         {
-            throw new NotImplementedException();
+            if (caller.Id == "modstag.config")
+            {
+                switch (data)
+                {
+                    case 0:
+                        return new((delegate* managed<void>)&OpenGUI);
+                    case 1:
+                        return new((delegate* managed<void>)&OptionGUI);
+                    case 0x0100:
+                        return 1;
+                    case 0x0101:
+                        return 1;
+                }
+            }
+            throw new ModEventSystem.SkipEventException(data);
         }
     }
 }
