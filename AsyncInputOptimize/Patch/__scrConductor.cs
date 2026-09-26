@@ -64,7 +64,7 @@ namespace AsyncInputOptimize.Patch
                     continue;
                 }
 #endif
-                yield return SafeDSPTime.ReplaceDSPTime(ci);
+                yield return ci;
             }
             yield break;
         }

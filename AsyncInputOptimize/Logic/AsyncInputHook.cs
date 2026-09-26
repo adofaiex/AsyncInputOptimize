@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 using static AsyncInputOptimize.SemiADOToolsLib.ADORef_scrConductor;
 
@@ -21,16 +22,51 @@ namespace AsyncInputOptimize.Logic
             AsyncInputData.offsetTick = AsyncInputData.currFrameTick - (ulong)SafeDSPTime.InterpolationDSPTimeAsFileTime;
             AsyncInputData.dspTime = SafeDSPTime.InterpolationDSPTime;
         }
+        public static void CountdownUpdate()
+        {
+            scrController ctrl = scrController.instance;
+            scrConductor cdtr = scrConductor.instance;
+            if (ctrl.goShown || cdtr.fastTakeoff || !(ctrl.state == States.PlayerControl || ctrl.state == States.Countdown || ctrl.state == States.Checkpoint))
+                return;
+            AsyncInputData.prevFrameTick = AsyncInputData.currFrameTick;
+            AsyncInputData.currFrameTick = CppBrige.GetSystemTick() + AsyncInputData.START_TIME;
+            AsyncInputData.offsetTick = AsyncInputData.currFrameTick - (ulong)SafeDSPTime.InterpolationDSPTimeAsFileTime;
+            AsyncInputData.dspTime = SafeDSPTime.InterpolationDSPTime;
+        }
         public static void ConductorUpdate(scrConductor @this)
         {
         JMP_RELOAD:
             double dspTime = SafeDSPTime.InterpolationDSPTime;
             double time = Time.unscaledTimeAsDouble;
-            @this.dspTime = dspTime;
+            @this.dspTime = Time.timeScale != 1 || Time.captureFramerate != 0 ? AudioSettings.dspTime : dspTime;
             lastReportedPlayheadPosition.SetValue(@this, dspTime);
             previousFrameTime.SetValue(@this, time);
             if (AsyncInputManager.isActive)
             {
+                if (Time.captureFramerate != 0 || Time.timeScale != 1)
+                {
+                    AsyncInputData.prevFrameTick = AsyncInputData.currFrameTick;
+                    AsyncInputData.currFrameTick = CppBrige.GetSystemTick() + AsyncInputData.START_TIME;
+                    if (!AudioListener.pause && Application.isFocused && time - AsyncInputManager.previousFrameTime < 0.1)
+                    {
+                        AsyncInputData.dspTime = AsyncInputManager.dspTime + time - AsyncInputManager.previousFrameTime;
+                    }
+
+                    AsyncInputManager.previousFrameTime = time;
+                    if (dspTime - AsyncInputManager.lastReportedDspTime != 0.0)
+                    {
+                        AsyncInputManager.lastReportedDspTime = dspTime;
+                        AsyncInputData.dspTime = dspTime;
+                        AsyncInputData.offsetTick = AsyncInputData.currFrameTick - (ulong)SafeDSPTime.InterpolationDSPTimeAsFileTime;
+                        AsyncInputManager.offsetTickUpdated = true;
+                    }
+                    goto END;
+                }
+                if (scrController.instance != null && !scrController.instance.goShown)
+                {
+                    CountdownUpdate();
+                    goto END;
+                }
                 if (scrController.instance?.paused ?? true)
                 {
                     PauseTime();
@@ -65,8 +101,8 @@ namespace AsyncInputOptimize.Logic
                         EntryPoint.logger.Log("Offset fix");
                     }
                 }
-
-
+                
+            END:
 #if ALPHA_2_9_8_R136 || RELEASE_2_5_0_R110 || RELEASE || BETA
                 AsyncInputManager.prevFrameTick = AsyncInputData.prevFrameTick;
                 AsyncInputManager.currFrameTick = AsyncInputData.currFrameTick;
@@ -76,7 +112,7 @@ namespace AsyncInputOptimize.Logic
                 AsyncInputManager.currFrameTick = (long)AsyncInputData.currFrameTick;
                 AsyncInputManager.offsetTick = (long)AsyncInputData.offsetTick;
 #endif
-                AsyncInputManager.previousFrameTime = Time.timeAsDouble;
+                AsyncInputManager.previousFrameTime = time;
                 AsyncInputManager.offsetTickUpdated = true;
 #if ALPHA_2_9_8_R136 || RELEASE_2_5_0_R110
                 AsyncInputManager.dspTime = AsyncInputData.dspTime;

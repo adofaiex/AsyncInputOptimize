@@ -110,6 +110,7 @@ namespace AsyncInputOptimize
             // EntryPoint.logger.Log("Update!!");
             double dsp_time = AudioSettings.dspTime;
             Volatile.Write(ref at_dsptime, dsp_time);
+            Thread.MemoryBarrier();
             Volatile.Write(ref at_time, (long)CppBrige.GetSystemTick());
         }
 
@@ -121,6 +122,7 @@ namespace AsyncInputOptimize
             Volatile.Write(ref ut_multiply, Time.captureFramerate != 0
             ? ((int)(Time.unscaledDeltaTime * 1E7 + 0.1) * 1E-7) / ((int)(Time.captureDeltaTime * 1E7 + 0.1) * 1E-7)
             : ((int)(Time.timeScale * 1E6 + 0.1) * 1E-6));
+            Thread.MemoryBarrier();
             Volatile.Write(ref ut_time, (long)CppBrige.GetSystemTick());
         }
         private static double at_dsptime;

@@ -89,6 +89,7 @@ namespace AsyncInputOptimize
         }
         public static void Update(ModEntry me, float _)
         {
+            
         }
         public static void GUI(ModEntry me)
         {
@@ -107,12 +108,16 @@ namespace AsyncInputOptimize
             GUILayout.Label("Audio Buffer Size");
             GUILayout.Label("      Simple Rate");
             GUILayout.Label("");
+            GUILayout.Label("AID PrevFrameTick");
+            GUILayout.Label("AID CurrFrameTick");
             GUILayout.Label("AID RealOffsetTick");
             GUILayout.Label("AID OffsetTick");
             GUILayout.Label("    Delta");
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical(new GUIStyle(GUIStyle.none) { normal = gss, hover = gss, focused = gss, active = gss, onNormal = gss, onHover = gss, onFocused = gss, onActive = gss, border = new RectOffset(4, 4, 4, 4) });
+            GUILayout.Label("");
+            GUILayout.Label("");
             GUILayout.Label("");
             GUILayout.Label("");
             GUILayout.Label("");
@@ -132,6 +137,8 @@ namespace AsyncInputOptimize
             double DSPTime_Precise = SafeDSPTime.GetAuidoPrecise() * 1000;
             int Audio_BufferSize = AudioSettings.GetConfiguration().dspBufferSize;
             int Audio_SimpleRate = AudioSettings.GetConfiguration().sampleRate;
+            long AID_PrevFrameTick = (long)AsyncInputData.prevFrameTick;
+            long AID_CurrFrameTick = (long)AsyncInputData.currFrameTick;
             long AID_RealOffsetTick = (long)AsyncInputData.offsetTick_REAL;
             long AID_OffsetTick = (long)AsyncInputData.offsetTick;
 
@@ -144,6 +151,8 @@ namespace AsyncInputOptimize
             GUILayout.Label(Audio_BufferSize.ToString());
             GUILayout.Label(Audio_SimpleRate.ToString());
             GUILayout.Label("");
+            GUILayout.Label(AID_PrevFrameTick.ToString());
+            GUILayout.Label(AID_CurrFrameTick.ToString());
             GUILayout.Label(AID_RealOffsetTick.ToString());
             GUILayout.Label(AID_OffsetTick.ToString());
             GUILayout.Label((AID_RealOffsetTick - AID_OffsetTick).ToString().PadLeft(10));
